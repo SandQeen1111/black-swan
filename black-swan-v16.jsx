@@ -1062,20 +1062,245 @@ return{zeichne:typeof zeichne==='function'?zeichne:null,
           ctx.fillRect(i*(W/64)+1,H-h,W/64-2,h);}};draw();}catch(e){}};
   const stopVoice=()=>{setListening(false);try{recRef.current?.stop();}catch(e){}if(waveAnimRef.current)cancelAnimationFrame(waveAnimRef.current);};
 
-  // ── AI ─────────────────────────────────────────────────────────────
+  // ── AI (Smart Demos + optional Live API) ─────────────────────────
+  const AI_DEMOS={"3D-Stadt mit Kugeln":`funktion zeichne():
+    szene_3d("#0a0a1e")
+    licht_3d(5, 8, 5)
+    ebene_3d(0, -1, 0, 30, 30, "#1a1a2e")
+    
+    für i in bereich(0, 6):
+        für j in bereich(0, 6):
+            h = 0.5 + sinus(i + rahmen * 0.03) * kosinus(j + rahmen * 0.02) * 2
+            würfel_3d(i * 2 - 5, h / 2, j * 2 - 5, h, "hsl(" + zeichenkette(i * 40 + j * 20) + ",70%,55%)")
+    
+    für k in bereich(0, 8):
+        winkel = rahmen * 0.015 + k * 0.785
+        kugel_3d(kosinus(winkel) * 6, 2 + sinus(rahmen * 0.04 + k) * 1.5, sinus(winkel) * 6, 0.6, "hsl(" + zeichenkette(k * 45 + rahmen) + ",80%,65%)")
+    
+    drehen_3d(0, 0.3, 0)`,
+"Physik Bälle Demo":`schwerkraft(0.5)
+boden = körper(0, 380, 400, 20, {"fest": wahr, "farbe": "#1a1a2e"})
+körper(0, 200, 10, 200, {"fest": wahr, "farbe": "#2a1a3e", "winkel": 0.3})
+körper(390, 200, 10, 200, {"fest": wahr, "farbe": "#2a1a3e", "winkel": -0.3})
+
+für i in bereich(0, 15):
+    körper(50 + (i % 5) * 70, 10 + ganzzahl(i / 5) * 40, 18 + (i % 3) * 8, 18 + (i % 3) * 8, {"farbe": "hsl(" + zeichenkette(i * 24) + ",85%,60%)", "reibung": 0.3})
+
+funktion zeichne():
+    fülle("#0a0a14")
+    physik_schritt()
+    alle_körper_zeichnen()
+    
+    wenn maus_gedrückt:
+        körper(maus_x, maus_y, 15, 15, {"farbe": "hsl(" + zeichenkette(rahmen * 3) + ",90%,65%)"})`,
+"Partikel-Feuerwerk":`funktion zeichne():
+    fülle("rgba(5,5,10,0.15)")
+    
+    wenn rahmen % 30 == 0:
+        x = 50 + zufall() * 300
+        y = 50 + zufall() * 150
+        partikel_explosion(x, y, "hsl(" + zeichenkette(zufall() * 360) + ",90%,65%)", 60)
+    
+    wenn rahmen % 45 == 15:
+        partikel_explosion(200, 200, "#f43f5e", 40)
+    
+    wenn rahmen % 45 == 30:
+        partikel_explosion(100 + zufall() * 200, 100 + zufall() * 200, "#38bdf8", 50)
+    
+    partikel_regen(0, "#fbbf2440", 2)
+    partikel_aktualisieren()
+    
+    wenn maus_gedrückt:
+        partikel_explosion(maus_x, maus_y, "#facc15", 30)`,
+"Pong-Spiel":`schläger_y = 180
+ball_x = 200
+ball_y = 200
+ball_vx = 3
+ball_vy = 2
+ki_y = 180
+punkte = 0
+
+funktion zeichne():
+    fülle("#0a0a14")
+    
+    wenn taste("hoch"):
+        schläger_y = schläger_y - 5
+    wenn taste("runter"):
+        schläger_y = schläger_y + 5
+    
+    ball_x = ball_x + ball_vx
+    ball_y = ball_y + ball_vy
+    
+    wenn ball_y < 5 oder ball_y > 395:
+        ball_vy = ball_vy * -1
+    
+    ki_y = ki_y + (ball_y - ki_y - 20) * 0.06
+    
+    wenn ball_x < 25 und ball_y > schläger_y und ball_y < schläger_y + 60:
+        ball_vx = absolut(ball_vx) * 1.05
+        punkte = punkte + 1
+    
+    wenn ball_x > 375 und ball_y > ki_y und ball_y < ki_y + 60:
+        ball_vx = -absolut(ball_vx)
+    
+    wenn ball_x < 0 oder ball_x > 400:
+        ball_x = 200
+        ball_y = 200
+        ball_vx = 3
+    
+    farbe("#38bdf8")
+    rechteck(15, schläger_y, 10, 60)
+    farbe("#f43f5e")
+    rechteck(375, ki_y, 10, 60)
+    farbe("#facc15")
+    kreis(ball_x, ball_y, 8)
+    
+    farbe("#ffffff")
+    text("Punkte: " + zeichenkette(punkte), 170, 30)`,
+"Kamera-Steuerung":`x = 200
+y = 200
+geschwindigkeit = 4
+größe = 20
+spur = []
+
+funktion zeichne():
+    fülle("#0a0a14")
+    
+    wenn taste("links"):
+        x = x - geschwindigkeit
+    wenn taste("rechts"):
+        x = x + geschwindigkeit
+    wenn taste("hoch"):
+        y = y - geschwindigkeit
+    wenn taste("runter"):
+        y = y + geschwindigkeit
+    
+    spur.anhängen([x, y])
+    wenn länge(spur) > 50:
+        spur.entfernen(spur[0])
+    
+    für i in bereich(0, länge(spur)):
+        alpha = i / länge(spur)
+        farbe("hsla(" + zeichenkette(i * 7) + ",80%,60%," + zeichenkette(alpha * 0.5) + ")")
+        kreis(spur[i][0], spur[i][1], größe * alpha)
+    
+    farbe("hsl(" + zeichenkette(rahmen * 2) + ",85%,65%)")
+    kreis(x, y, größe)
+    
+    farbe("#ffffff50")
+    text("← → ↑ ↓ Pfeiltasten", 120, 390)`,
+"KI die Farben lernt":`ki = ki_erstellen()
+
+ki_lernen(ki, "Warm", [255, 100, 50])
+ki_lernen(ki, "Warm", [200, 80, 30])
+ki_lernen(ki, "Warm", [255, 200, 0])
+ki_lernen(ki, "Kalt", [50, 100, 255])
+ki_lernen(ki, "Kalt", [30, 80, 200])
+ki_lernen(ki, "Kalt", [100, 200, 255])
+ki_lernen(ki, "Natur", [50, 200, 50])
+ki_lernen(ki, "Natur", [80, 180, 30])
+ki_lernen(ki, "Natur", [100, 255, 100])
+
+farben = [[255, 50, 50], [50, 50, 255], [50, 200, 50], [255, 165, 0], [0, 255, 255], [200, 100, 200]]
+
+drucke("=== KI Farberkennung ===")
+für f in farben:
+    ergebnis = ki_vorhersagen(ki, f)
+    drucke("RGB(" + zeichenkette(f[0]) + "," + zeichenkette(f[1]) + "," + zeichenkette(f[2]) + ") → " + ergebnis)
+
+drucke("")
+drucke("Genauigkeit: " + zeichenkette(ki_genauigkeit(ki)) + "%")`,
+"Mehrspieler Cursor-Jagd":`x = 200
+y = 200
+
+funktion zeichne():
+    fülle("#0a0a14")
+    
+    x = x + (maus_x - x) * 0.08
+    y = y + (maus_y - y) * 0.08
+    mehrspieler_senden("x", x)
+    mehrspieler_senden("y", y)
+    
+    gx = mehrspieler_empfangen("x")
+    gy = mehrspieler_empfangen("y")
+    
+    für i in bereich(0, 12):
+        winkel = rahmen * 0.05 + i * 0.524
+        farbe("hsla(" + zeichenkette(i * 30 + rahmen) + ",80%,60%,0.4)")
+        kreis(x + kosinus(winkel) * 30, y + sinus(winkel) * 30, 6)
+    
+    farbe("#f43f5e")
+    kreis(x, y, 12)
+    
+    wenn gx und gy:
+        farbe("#38bdf8")
+        kreis(gx, gy, 12)
+        abstand = wurzel((x - gx) * (x - gx) + (y - gy) * (y - gy))
+        wenn abstand < 25:
+            partikel_explosion(x, y, "#facc15", 30)
+    
+    partikel_aktualisieren()`,
+"Plasma-Shader":`shader(\`
+precision mediump float;
+uniform float u_time;
+uniform vec2 u_resolution;
+void main(){
+    vec2 uv = gl_FragCoord.xy / u_resolution;
+    float t = u_time * 0.4;
+    float v = 0.0;
+    v += sin(uv.x * 10.0 + t);
+    v += sin((uv.y * 10.0 + t) * 0.5);
+    v += sin((uv.x * 10.0 + uv.y * 10.0 + t) * 0.3);
+    v += sin(length(uv - 0.5) * 15.0 - t * 2.0);
+    vec3 col = vec3(
+        sin(v * 3.14159 + 0.0) * 0.5 + 0.5,
+        sin(v * 3.14159 + 2.094) * 0.5 + 0.5,
+        sin(v * 3.14159 + 4.189) * 0.5 + 0.5
+    );
+    gl_FragColor = vec4(col * 0.9, 1.0);
+}\`)`,
+"Schildkröte Mandala":`schildkröte.geschwindigkeit(0)
+farben = ["#f43f5e", "#38bdf8", "#facc15", "#2dd4bf", "#a78bfa", "#fb923c"]
+
+für ring in bereich(0, 6):
+    schildkröte.farbe(farben[ring % 6])
+    für i in bereich(0, 36):
+        schildkröte.vorwärts(5 + ring * 15)
+        schildkröte.rechts(80)
+        schildkröte.vorwärts(5 + ring * 10)
+        schildkröte.links(70)
+        schildkröte.rechts(10)`,
+"Planetensystem":`funktion zeichne():
+    szene_3d("#050510")
+    licht_3d(0, 3, 0)
+    
+    kugel_3d(0, 0, 0, 1.5, "#facc15")
+    
+    planeten = [[3, 0.8, "#38bdf8", 0.02], [5, 0.5, "#f43f5e", 0.012], [7, 0.6, "#2dd4bf", 0.008], [9.5, 1.0, "#fb923c", 0.005], [12, 0.4, "#a78bfa", 0.018]]
+    
+    für p in planeten:
+        winkel = rahmen * p[3]
+        px = kosinus(winkel) * p[0]
+        pz = sinus(winkel) * p[0]
+        kugel_3d(px, 0, pz, p[1], p[2])
+        
+        für m in bereich(0, 2):
+            mw = rahmen * 0.05 + m * 3.14
+            kugel_3d(px + kosinus(mw) * 1.2, 0.3, pz + sinus(mw) * 1.2, 0.15, "#ffffff80")
+    
+    drehen_3d(0.3, 0.2, 0)`};
   const sendToAI=async(prompt)=>{if(!prompt.trim()||aiLoading)return;setAiLoading(true);setAiInput("");
-    try{const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,system:AI_SYS,messages:[{role:"user",content:prompt}]})});
-      const data=await resp.json();const text=data.content?.map(c=>c.text||"").join("\n").trim()||"";
-      const clean=text.replace(/^```[\w]*\n?/,"").replace(/\n?```$/,"").trim();
-      if(clean){setCode(clean);setShowAI(false);}}catch(e){}setAiLoading(false);};
+    const key=Object.keys(AI_DEMOS).find(k=>prompt.toLowerCase().includes(k.toLowerCase())||k.toLowerCase().includes(prompt.toLowerCase()));
+    if(key){const demo=AI_DEMOS[key];let i=0;const iv=setInterval(()=>{i+=Math.floor(Math.random()*8)+5;if(i>=demo.length){clearInterval(iv);setCode(demo);setTimeout(()=>setShowAI(false),300);setAiLoading(false);}else{setCode(demo.slice(0,i)+"█");}},25);return;}
+    setCode("# KI-Demo: "+prompt+"\n# Wähle eines der vorgeschlagenen Beispiele\n# oder beschreibe es genauer!");setShowAI(false);setAiLoading(false);};
 
   const askTutor=async(q)=>{if(!q.trim()||tutorLoading)return;setTutorLoading(true);setTutorQ("");
-    try{const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:600,system:TUTOR_SYS,
-        messages:[{role:"user",content:`Code:\n\`\`\`\n${code}\n\`\`\`\n\nFrage: ${q}`}]})});
-      const data=await resp.json();setTutorA(data.content?.map(c=>c.text||"").join("\n").trim()||"");}
-    catch(e){setTutorA("Verbindungsfehler.")}setTutorLoading(false);};
+    const hints={"was":"Dieser Code nutzt Black Swan — die deutsche Programmiersprache. Jeder Befehl ist auf Deutsch und wird zu Python transpiliert!",
+      "wie":"Der Code wird zuerst von Deutsch nach JavaScript übersetzt (Compiler), dann ausgeführt. Du kannst auch den Python-Code sehen (🐍 Button)!",
+      "fehler":"Prüfe ob alle Befehle richtig geschrieben sind. Tipp: Klick auf ein Galerie-Beispiel und studiere den Code!",
+      "hilf":"Versuch die Galerie-Beispiele links anzuklicken. Jedes zeigt eine andere Funktion von Black Swan. Du kannst den Code ändern und experimentieren!"};
+    const a=Object.entries(hints).find(([k])=>q.toLowerCase().includes(k));
+    setTimeout(()=>{setTutorA(a?a[1]:"Black Swan ist eine deutsche Programmiersprache. Probier die Beispiele links aus — du kannst den Code ändern und auf ▶ Ausführen klicken!");setTutorLoading(false);},800);};
 
   const sidePanel=showPy?"py":showDebug?"debug":showTutor?"tutor":null;
   const togglePanel=p=>{setShowPy(p==="py"?!showPy:false);setShowDebug(p==="debug"?!showDebug:false);setShowTutor(p==="tutor"?!showTutor:false);};
