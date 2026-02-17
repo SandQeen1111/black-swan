@@ -5,17 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Black Swan v16 OMEGA — Deutsche Programmiersprache</title>
 <meta name="description" content="Black Swan: Die erste vollständige deutsche Programmiersprache mit IDE. 12 Features: 3D, Physik, KI, Shader, Multiplayer und mehr.">
+<meta property="og:title" content="Black Swan v16 OMEGA">
+<meta property="og:description" content="Programmiere auf Deutsch. Transpiliert zu Python. 12 Features in einer IDE.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1f9a2;</text></svg>">
-<style>html,body,#root{margin:0;padding:0;height:100%;overflow:hidden;background:#050508}</style>
+<style>html,body,#root{margin:0;padding:0;height:100%;overflow:hidden;background:#050508}
+#error{color:#f43f5e;font-family:monospace;padding:20px;white-space:pre-wrap}</style>
 </head>
 <body>
 <div id="root"></div>
+<div id="error"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-<script type="text/babel" data-presets="react">
-const { useState, useEffect, useCallback, useRef } = React;
+<script>
+try {
+const {
+  useState,
+  useEffect,
+  useCallback,
+  useRef
+} = React;
 // THREE loaded via CDN
 
 // ════════════════════════════════════════════════════════════════════
@@ -23,86 +32,175 @@ const { useState, useEffect, useCallback, useRef } = React;
 //  👥 Multi · 🌐 Shader · 🖐️ Körper · 🧠 KI · 🧊 3D · ⚛️ Physik · 🎭 Partikel · 🎮 Game
 // ════════════════════════════════════════════════════════════════════
 
-const KW={wenn:"if",sonst_wenn:"elif",sonst:"else",solange:"while","für":"for",
-abbrechen:"break",weiter:"continue",übergeben:"pass",funktion:"def",
-zurückgeben:"return",klasse:"class",selbst:"self",wahr:"True",falsch:"False",
-und:"and",oder:"or",nicht:"not",ist:"is",nichts:"None",versuche:"try",
-ausnahme:"except",schließlich:"finally",importiere:"import",
-von:"from",als:"as",mit:"with",anonym:"lambda","in":"in"};
-const BF={drucke:"print",bereich:"range",länge:"len",ganzzahl:"int",
-dezimal:"float",zeichenkette:"str",liste:"list",abs_wert:"abs",
-runden:"round",sortiert:"sorted",minimum:"min",maximum:"max",summe:"sum"};
-const ALL={...KW,...BF};
-const MT={".anhängen(":".append(",".herausholen(":".pop(",".sortieren(":".sort(",
-".umkehren(":".reverse(",".ersetzen(":".replace(",".teilen(":".split(",
-".einfügen(":".insert(",".entfernen(":".remove(",".großbuchstaben(":".upper(",
-".kleinbuchstaben(":".lower(",".streifen(":".strip(",".finden(":".find(",
-".zählen(":".count(",".verbinden(":".join(",".beginnt_mit(":".startswith(",
-".endet_mit(":".endswith(",".schlüssel(":".keys(",".werte(":".values("};
-
-function protect(c){const s=[];const r=c.replace(/("""[\s\S]*?"""|'''[\s\S]*?'''|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|#.*$)/gm,
-m=>{s.push(m);return`\x00${s.length-1}\x00`});return{safe:r,strings:s}}
-function restore(c,s){return c.replace(/\x00(\d+)\x00/g,(_,i)=>s[+i])}
-const WB_S="(?<![a-zA-ZäöüÄÖÜß_0-9])",WB_E="(?![a-zA-ZäöüÄÖÜß_0-9])";
-function deToEn(code){let{safe,strings}=protect(code);
-for(const k of Object.keys(MT).sort((a,b)=>b.length-a.length))safe=safe.split(k).join(MT[k]);
-for(const k of Object.keys(ALL).sort((a,b)=>b.length-a.length)){
-const e=k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-safe=safe.replace(new RegExp(`${WB_S}${e}${WB_E}`,"g"),ALL[k])}
-return restore(safe,strings)}
+const KW = {
+  wenn: "if",
+  sonst_wenn: "elif",
+  sonst: "else",
+  solange: "while",
+  "für": "for",
+  abbrechen: "break",
+  weiter: "continue",
+  übergeben: "pass",
+  funktion: "def",
+  zurückgeben: "return",
+  klasse: "class",
+  selbst: "self",
+  wahr: "True",
+  falsch: "False",
+  und: "and",
+  oder: "or",
+  nicht: "not",
+  ist: "is",
+  nichts: "None",
+  versuche: "try",
+  ausnahme: "except",
+  schließlich: "finally",
+  importiere: "import",
+  von: "from",
+  als: "as",
+  mit: "with",
+  anonym: "lambda",
+  "in": "in"
+};
+const BF = {
+  drucke: "print",
+  bereich: "range",
+  länge: "len",
+  ganzzahl: "int",
+  dezimal: "float",
+  zeichenkette: "str",
+  liste: "list",
+  abs_wert: "abs",
+  runden: "round",
+  sortiert: "sorted",
+  minimum: "min",
+  maximum: "max",
+  summe: "sum"
+};
+const ALL = {
+  ...KW,
+  ...BF
+};
+const MT = {
+  ".anhängen(": ".append(",
+  ".herausholen(": ".pop(",
+  ".sortieren(": ".sort(",
+  ".umkehren(": ".reverse(",
+  ".ersetzen(": ".replace(",
+  ".teilen(": ".split(",
+  ".einfügen(": ".insert(",
+  ".entfernen(": ".remove(",
+  ".großbuchstaben(": ".upper(",
+  ".kleinbuchstaben(": ".lower(",
+  ".streifen(": ".strip(",
+  ".finden(": ".find(",
+  ".zählen(": ".count(",
+  ".verbinden(": ".join(",
+  ".beginnt_mit(": ".startswith(",
+  ".endet_mit(": ".endswith(",
+  ".schlüssel(": ".keys(",
+  ".werte(": ".values("
+};
+function protect(c) {
+  const s = [];
+  const r = c.replace(/("""[\s\S]*?"""|'''[\s\S]*?'''|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|#.*$)/gm, m => {
+    s.push(m);
+    return `\x00${s.length - 1}\x00`;
+  });
+  return {
+    safe: r,
+    strings: s
+  };
+}
+function restore(c, s) {
+  return c.replace(/\x00(\d+)\x00/g, (_, i) => s[+i]);
+}
+const WB_S = "(?<![a-zA-ZäöüÄÖÜß_0-9])",
+  WB_E = "(?![a-zA-ZäöüÄÖÜß_0-9])";
+function deToEn(code) {
+  let {
+    safe,
+    strings
+  } = protect(code);
+  for (const k of Object.keys(MT).sort((a, b) => b.length - a.length)) safe = safe.split(k).join(MT[k]);
+  for (const k of Object.keys(ALL).sort((a, b) => b.length - a.length)) {
+    const e = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    safe = safe.replace(new RegExp(`${WB_S}${e}${WB_E}`, "g"), ALL[k]);
+  }
+  return restore(safe, strings);
+}
 
 // ── EXECUTION ENGINE ─────────────────────────────────────────────────
-function compileGerman(code){
-let js="";const parsed=[];
-for(const raw of code.split("\n")){const t=raw.trim();
-if(!t||t.startsWith("#"))continue;
-parsed.push({indent:Math.max(0,raw.search(/\S/)),text:t})}
-const bs=[];
-for(let i=0;i<parsed.length;i++){
-const{indent,text}=parsed[i];
-const isCont=/^(sonst_wenn\s|sonst:|ausnahme|schließlich:)/.test(text);
-if(!isCont){while(bs.length>0&&indent<=bs[bs.length-1]){bs.pop();js+="}\n"}}
-else{while(bs.length>0&&indent<bs[bs.length-1]){bs.pop();js+="}\n"}
-if(bs.length>0&&indent<=bs[bs.length-1])bs.pop()}
-const line=tLine(text);
-if(text.endsWith(":")){js+=line+"\n";bs.push(indent)}else{js+=line+";\n"}}
-while(bs.length>0){bs.pop();js+="}\n"}
-return js}
-
-function tLine(t){let l=t;
-if(/^drucke\(/.test(l))return"__out.push("+tEx(l.slice(7,-1))+")";let m;
-if((m=l.match(/^für\s+([\wäöüÄÖÜß]+)\s+in\s+(.+):$/)))return"for(let "+m[1]+" of "+tEx(m[2])+"){";
-if((m=l.match(/^solange\s+(.+):$/)))return"while("+tEx(m[1])+"){";
-if((m=l.match(/^wenn\s+(.+):$/)))return"if("+tEx(m[1])+"){";
-if((m=l.match(/^sonst_wenn\s+(.+):$/)))return"} else if("+tEx(m[1])+"){";
-if(l==="sonst:")return"} else {";
-if((m=l.match(/^funktion\s+([\wäöüÄÖÜß]+)\((.*)\):$/)))
-return"function "+m[1]+"("+m[2].replace(/selbst,?\s*/,"")+"){";
-if((m=l.match(/^klasse\s+([\wäöüÄÖÜß]+)\s*(\(.*\))?\s*:$/)))
-return"class "+m[1]+(m[2]?" extends "+m[2].slice(1,-1):"")+"{";
-if((m=l.match(/^zurückgeben\s+(.+)$/)))return"return "+tEx(m[1]);
-if(l==="versuche:")return"try{";if(/^ausnahme/.test(l))return"}catch(__e){";
-if(l==="abbrechen")return"break";if(l==="weiter")return"continue";
-if(l==="übergeben")return"/* pass */";if(l==="schließlich:")return"}finally{";
-return tEx(l)}
-function tEx(e){return e.replace(/\bwahr\b/g,"true").replace(/\bfalsch\b/g,"false")
-.replace(/\bnichts\b/g,"null").replace(/\bund\b/g,"&&").replace(/\boder\b/g,"||")
-.replace(/\bnicht\s+/g,"!").replace(/\.anhängen\(/g,".push(")
-.replace(/\.herausholen\(/g,".pop(").replace(/\bliste\(\)/g,"[]")
-.replace(/\.ersetzen\(/g,".replace(").replace(/\.teilen\(/g,".split(")
-.replace(/\.sortieren\(\)/g,".sort()").replace(/\.umkehren\(\)/g,".reverse()")
-.replace(/\.einfügen\(/g,".__einfügen(").replace(/\.entfernen\(/g,".__entfernen(")
-.replace(/\.großbuchstaben\(\)/g,".toUpperCase()").replace(/\.kleinbuchstaben\(\)/g,".toLowerCase()")
-.replace(/\.streifen\(\)/g,".trim()").replace(/\.finden\(/g,".indexOf(")
-.replace(/\.verbinden\(/g,".join(")
-.replace(/\.beginnt_mit\(/g,".startsWith(").replace(/\.endet_mit\(/g,".endsWith(")}
-function tErr(m){return m?m.replace(/is not defined/g,"ist nicht definiert")
-.replace(/is not a function/g,"ist keine Funktion")
-.replace(/Cannot read properties of/g,"Kann Eigenschaft nicht lesen von")
-.replace(/undefined/g,"undefiniert").replace(/null/g,"nichts")
-.replace(/SyntaxError/g,"Syntaxfehler").replace(/TypeError/g,"Typfehler")
-.replace(/RangeError/g,"Bereichsfehler").replace(/ReferenceError/g,"Referenzfehler")
-.replace(/Maximum call stack/g,"Maximale Aufruftiefe"):m}
+function compileGerman(code) {
+  let js = "";
+  const parsed = [];
+  for (const raw of code.split("\n")) {
+    const t = raw.trim();
+    if (!t || t.startsWith("#")) continue;
+    parsed.push({
+      indent: Math.max(0, raw.search(/\S/)),
+      text: t
+    });
+  }
+  const bs = [];
+  for (let i = 0; i < parsed.length; i++) {
+    const {
+      indent,
+      text
+    } = parsed[i];
+    const isCont = /^(sonst_wenn\s|sonst:|ausnahme|schließlich:)/.test(text);
+    if (!isCont) {
+      while (bs.length > 0 && indent <= bs[bs.length - 1]) {
+        bs.pop();
+        js += "}\n";
+      }
+    } else {
+      while (bs.length > 0 && indent < bs[bs.length - 1]) {
+        bs.pop();
+        js += "}\n";
+      }
+      if (bs.length > 0 && indent <= bs[bs.length - 1]) bs.pop();
+    }
+    const line = tLine(text);
+    if (text.endsWith(":")) {
+      js += line + "\n";
+      bs.push(indent);
+    } else {
+      js += line + ";\n";
+    }
+  }
+  while (bs.length > 0) {
+    bs.pop();
+    js += "}\n";
+  }
+  return js;
+}
+function tLine(t) {
+  let l = t;
+  if (/^drucke\(/.test(l)) return "__out.push(" + tEx(l.slice(7, -1)) + ")";
+  let m;
+  if (m = l.match(/^für\s+([\wäöüÄÖÜß]+)\s+in\s+(.+):$/)) return "for(let " + m[1] + " of " + tEx(m[2]) + "){";
+  if (m = l.match(/^solange\s+(.+):$/)) return "while(" + tEx(m[1]) + "){";
+  if (m = l.match(/^wenn\s+(.+):$/)) return "if(" + tEx(m[1]) + "){";
+  if (m = l.match(/^sonst_wenn\s+(.+):$/)) return "} else if(" + tEx(m[1]) + "){";
+  if (l === "sonst:") return "} else {";
+  if (m = l.match(/^funktion\s+([\wäöüÄÖÜß]+)\((.*)\):$/)) return "function " + m[1] + "(" + m[2].replace(/selbst,?\s*/, "") + "){";
+  if (m = l.match(/^klasse\s+([\wäöüÄÖÜß]+)\s*(\(.*\))?\s*:$/)) return "class " + m[1] + (m[2] ? " extends " + m[2].slice(1, -1) : "") + "{";
+  if (m = l.match(/^zurückgeben\s+(.+)$/)) return "return " + tEx(m[1]);
+  if (l === "versuche:") return "try{";
+  if (/^ausnahme/.test(l)) return "}catch(__e){";
+  if (l === "abbrechen") return "break";
+  if (l === "weiter") return "continue";
+  if (l === "übergeben") return "/* pass */";
+  if (l === "schließlich:") return "}finally{";
+  return tEx(l);
+}
+function tEx(e) {
+  return e.replace(/\bwahr\b/g, "true").replace(/\bfalsch\b/g, "false").replace(/\bnichts\b/g, "null").replace(/\bund\b/g, "&&").replace(/\boder\b/g, "||").replace(/\bnicht\s+/g, "!").replace(/\.anhängen\(/g, ".push(").replace(/\.herausholen\(/g, ".pop(").replace(/\bliste\(\)/g, "[]").replace(/\.ersetzen\(/g, ".replace(").replace(/\.teilen\(/g, ".split(").replace(/\.sortieren\(\)/g, ".sort()").replace(/\.umkehren\(\)/g, ".reverse()").replace(/\.einfügen\(/g, ".__einfügen(").replace(/\.entfernen\(/g, ".__entfernen(").replace(/\.großbuchstaben\(\)/g, ".toUpperCase()").replace(/\.kleinbuchstaben\(\)/g, ".toLowerCase()").replace(/\.streifen\(\)/g, ".trim()").replace(/\.finden\(/g, ".indexOf(").replace(/\.verbinden\(/g, ".join(").replace(/\.beginnt_mit\(/g, ".startsWith(").replace(/\.endet_mit\(/g, ".endsWith(");
+}
+function tErr(m) {
+  return m ? m.replace(/is not defined/g, "ist nicht definiert").replace(/is not a function/g, "ist keine Funktion").replace(/Cannot read properties of/g, "Kann Eigenschaft nicht lesen von").replace(/undefined/g, "undefiniert").replace(/null/g, "nichts").replace(/SyntaxError/g, "Syntaxfehler").replace(/TypeError/g, "Typfehler").replace(/RangeError/g, "Bereichsfehler").replace(/ReferenceError/g, "Referenzfehler").replace(/Maximum call stack/g, "Maximale Aufruftiefe") : m;
+}
 
 // ══════════════════════════════════════════════════════════════════════
 //  R U N T I M E S
@@ -139,7 +237,6 @@ function fülle(c){__d.push({t:"f",c})}
 Array.prototype.__einfügen=function(pos,item){this.splice(pos,0,item)};
 Array.prototype.__entfernen=function(item){const i=this.indexOf(item);if(i>-1)this.splice(i,1)};
 `;
-
 const TURTLE_RT = `
 const __turtle={x:200,y:200,a:-90,c:"#f43f5e",w:2,pen:true,vis:true};
 const schildkröte={
@@ -155,7 +252,6 @@ const schildkröte={
   verstecken(){__turtle.vis=false},zeigen(){__turtle.vis=true},
   position(){return[__turtle.x,__turtle.y]}
 };`;
-
 const SOUND_RT = `
 function spiele_ton(freq,dauer,typ){
   if(typeof __audioCtx==='undefined')return;
@@ -167,7 +263,6 @@ function spiele_ton(freq,dauer,typ){
 const NOTEN={C3:131,D3:147,E3:165,F3:175,G3:196,A3:220,B3:247,
   C4:262,D4:294,E4:330,F4:349,G4:392,A4:440,B4:494,C5:523,D5:587,E5:659,F5:698,G5:784,A5:880,B5:988};
 function spiele_note(note,dauer){spiele_ton(NOTEN[note]||440,dauer)}`;
-
 const PHYSICS_RT = `
 const __körper_liste=[];let __schwerkraft_y=0.3,__schwerkraft_x=0;
 function schwerkraft(sy,sx){__schwerkraft_y=sy;if(sx!==undefined)__schwerkraft_x=sx;}
@@ -191,7 +286,6 @@ function physik_schritt(){
 function kollision(a,b){return a.x<b.x+b.b&&a.x+a.b>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
 function körper_zeichnen(k){__d.push({t:"r",x:k.x,y:k.y,w:k.b,h:k.h,c:k.farbe});}
 function alle_körper_zeichnen(){for(const k of __körper_liste)körper_zeichnen(k);}`;
-
 const PARTICLE_RT = `
 const __partikel=[];
 function partikel_erzeugen(x,y,opt){const n=opt?.anzahl||20,sp=opt?.geschwindigkeit||3,f=opt?.farbe||"#facc15",l=opt?.leben||60,g=opt?.größe||3;
@@ -205,7 +299,6 @@ function partikel_aktualisieren(){for(let i=__partikel.length-1;i>=0;i--){
   if(p.leben<=0)__partikel.splice(i,1);
   else{const a=p.leben/p.maxL;__d.push({t:"c",x:p.x,y:p.y,r:p.größe*a,c:p.farbe});}}}
 function partikel_anzahl(){return __partikel.length;}`;
-
 const GAME_RT = `
 function taste(t){return __keys[t.toLowerCase()]||__keys[t]||false;}
 function punkte_anzeigen(x,y,p,opt){__d.push({t:"tx",x,y,txt:String(p),c:opt?.farbe||"#facc15",s:opt?.größe||20});}
@@ -319,17 +412,14 @@ function shader_wert(name,wert){__shader_uniforms[name]=wert;}
 `;
 
 // ── HIGHLIGHTING ─────────────────────────────────────────────────────
-const KW_RE="wenn|sonst_wenn|sonst|solange|für|abbrechen|weiter|übergeben|funktion|zurückgeben|klasse|selbst|wahr|falsch|und|oder|nicht|nichts|versuche|ausnahme|schließlich|in";
-const FN_RE="drucke|bereich|länge|zeichenkette|ganzzahl|dezimal|liste|sortiert|minimum|maximum|summe|zufall|zufall_dezimal|sinus|kosinus|wurzel|potenz|abs_wert|runden|typ|formatieren|wörterbuch|zeichne_kreis|zeichne_linie|zeichne_rechteck|zeichne_text|fülle|spiele_ton|spiele_note|schildkröte|schwerkraft|körper|kraft|physik_schritt|kollision|körper_zeichnen|alle_körper_zeichnen|partikel_erzeugen|partikel_explosion|partikel_regen|partikel_aktualisieren|partikel_anzahl|taste|spielobjekt|objekt_zeichnen|objekt_kreis|objekte_kollidieren|abstand|bewege|begrenze|punkte_anzeigen|kamera_starten|kamera_stoppen|ki_erstellen|ki_lernen|ki_vorhersagen|ki_genauigkeit|ki_daten_anzahl|ki_klassen|szene_3d|würfel_3d|kugel_3d|zylinder_3d|ebene_3d|licht_3d|kamera_3d|blickpunkt_3d|drehen_3d|text_3d|mehrspieler_name|mehrspieler_senden|mehrspieler_lesen|mehrspieler_alle|mehrspieler_anzahl|mein_name|shader|shader_wert";
-function hlDE(code){return code.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-.replace(/(#.*?)$/gm,'<em style="color:#525280">$1</em>')
-.replace(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g,'<b style="color:#2dd4bf">$1</b>')
-.replace(/\b(\d+\.?\d*)\b/g,'<b style="color:#facc15">$1</b>')
-.replace(new RegExp(`(?<![a-zA-ZäöüÄÖÜß_])(${KW_RE})(?![a-zA-ZäöüÄÖÜß_])`,"g"),'<b style="color:#f43f5e">$1</b>')
-.replace(new RegExp(`(?<![a-zA-ZäöüÄÖÜß_.])(${FN_RE})(?=[.(])`,"g"),'<b style="color:#38bdf8">$1</b>')}
+const KW_RE = "wenn|sonst_wenn|sonst|solange|für|abbrechen|weiter|übergeben|funktion|zurückgeben|klasse|selbst|wahr|falsch|und|oder|nicht|nichts|versuche|ausnahme|schließlich|in";
+const FN_RE = "drucke|bereich|länge|zeichenkette|ganzzahl|dezimal|liste|sortiert|minimum|maximum|summe|zufall|zufall_dezimal|sinus|kosinus|wurzel|potenz|abs_wert|runden|typ|formatieren|wörterbuch|zeichne_kreis|zeichne_linie|zeichne_rechteck|zeichne_text|fülle|spiele_ton|spiele_note|schildkröte|schwerkraft|körper|kraft|physik_schritt|kollision|körper_zeichnen|alle_körper_zeichnen|partikel_erzeugen|partikel_explosion|partikel_regen|partikel_aktualisieren|partikel_anzahl|taste|spielobjekt|objekt_zeichnen|objekt_kreis|objekte_kollidieren|abstand|bewege|begrenze|punkte_anzeigen|kamera_starten|kamera_stoppen|ki_erstellen|ki_lernen|ki_vorhersagen|ki_genauigkeit|ki_daten_anzahl|ki_klassen|szene_3d|würfel_3d|kugel_3d|zylinder_3d|ebene_3d|licht_3d|kamera_3d|blickpunkt_3d|drehen_3d|text_3d|mehrspieler_name|mehrspieler_senden|mehrspieler_lesen|mehrspieler_alle|mehrspieler_anzahl|mein_name|shader|shader_wert";
+function hlDE(code) {
+  return code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/(#.*?)$/gm, '<em style="color:#525280">$1</em>').replace(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g, '<b style="color:#2dd4bf">$1</b>').replace(/\b(\d+\.?\d*)\b/g, '<b style="color:#facc15">$1</b>').replace(new RegExp(`(?<![a-zA-ZäöüÄÖÜß_])(${KW_RE})(?![a-zA-ZäöüÄÖÜß_])`, "g"), '<b style="color:#f43f5e">$1</b>').replace(new RegExp(`(?<![a-zA-ZäöüÄÖÜß_.])(${FN_RE})(?=[.(])`, "g"), '<b style="color:#38bdf8">$1</b>');
+}
 
 // ── AI PROMPTS ───────────────────────────────────────────────────────
-const AI_SYS=`Du bist Black Swan — die deutsche Programmiersprache. Generiere NUR Code, KEIN Markdown/Backticks.
+const AI_SYS = `Du bist Black Swan — die deutsche Programmiersprache. Generiere NUR Code, KEIN Markdown/Backticks.
 Keywords: wenn, sonst, sonst_wenn, für, solange, funktion, zurückgeben, wahr, falsch, und, oder, nicht
 Funktionen: drucke(), bereich(), länge(), zeichenkette(), ganzzahl(), zufall(min,max), sinus(), kosinus(), PI
 2D Canvas: zeichne_kreis(x,y,r,farbe), zeichne_linie(x1,y1,x2,y2,farbe,breite), zeichne_rechteck(x,y,b,h,farbe), zeichne_text(x,y,text,farbe,größe), fülle(farbe)
@@ -345,33 +435,28 @@ Shader: shader(glsl_code), shader_wert(name,wert) — GLSL Fragment-Shader, unif
 Animation: funktion zeichne(): für 60fps. Nutze rahmen, maus_x, maus_y, maus_gedrückt
 Sound: spiele_ton(freq,dauer), spiele_note("C4",dauer)
 Alles auf Deutsch.`;
-
-const TUTOR_SYS=`Du bist der Black Swan KI-Tutor. Erkläre Code auf Deutsch in einfacher Sprache. Max 4-5 Sätze. Sei ermutigend.
+const TUTOR_SYS = `Du bist der Black Swan KI-Tutor. Erkläre Code auf Deutsch in einfacher Sprache. Max 4-5 Sätze. Sei ermutigend.
 Black Swan ist eine deutsche Programmiersprache die zu Python transpiliert. für=for, wenn=if, funktion=def, drucke=print.
 Neue Features: 3D (szene_3d, würfel_3d, kugel_3d), Physik (schwerkraft, körper), Partikel, Game Engine (taste), Kamera (kamera_starten), KI Training (ki_erstellen, ki_lernen), Mehrspieler (mehrspieler_senden/lesen), Shader (shader(glsl)).`;
 
 // ── SPEECH TO CODE ───────────────────────────────────────────────────
-function speechToCode(raw){let t=raw.trim();
-const kws=["drucke","wenn","sonst","solange","für","funktion","zurückgeben","wahr","falsch",
-"und","oder","nicht","nichts","bereich","länge","zeichenkette","ganzzahl","liste",
-"zeichne_kreis","zeichne_linie","zeichne_rechteck","fülle","sinus","kosinus","zufall",
-"schildkröte","spiele_ton","körper","schwerkraft","partikel_explosion","taste","spielobjekt",
-"szene_3d","würfel_3d","kugel_3d","kamera_starten","ki_erstellen","ki_lernen",
-"mehrspieler_senden","mehrspieler_lesen","mehrspieler_name","shader","shader_wert","in"];
-for(const k of kws)t=t.replace(new RegExp("\\b"+k+"\\b","gi"),k);
-const nums=[["null","0"],["eins","1"],["zwei","2"],["drei","3"],["vier","4"],["fünf","5"],
-["sechs","6"],["sieben","7"],["acht","8"],["neun","9"],["zehn","10"]];
-for(const[w,d]of nums)t=t.replace(new RegExp(`\\b${w}\\b`,"gi"),d);
-t=t.replace(/\bgleich gleich\b/gi,"==").replace(/\bgrößer\b/gi,">").replace(/\bkleiner\b/gi,"<")
-.replace(/\bgleich\b/gi,"=").replace(/\bplus\b/gi,"+").replace(/\bminus\b/gi,"-")
-.replace(/\bklammer auf\b/gi,"(").replace(/\bklammer zu\b/gi,")").replace(/\bkomma\b/gi,",");
-t=t.replace(/^drucke\s+(?!\()(.+?)$/gm,(_,a)=>/[+\-*/=<>]/.test(a)?`drucke(${a})`:`drucke("${a}")`);
-if(/^(für\s+\w+\s+in|wenn\s|solange\s|funktion\s)/.test(t)&&!t.endsWith(":"))t+=":";
-return t.replace(/\s+/g," ").trim()}
+function speechToCode(raw) {
+  let t = raw.trim();
+  const kws = ["drucke", "wenn", "sonst", "solange", "für", "funktion", "zurückgeben", "wahr", "falsch", "und", "oder", "nicht", "nichts", "bereich", "länge", "zeichenkette", "ganzzahl", "liste", "zeichne_kreis", "zeichne_linie", "zeichne_rechteck", "fülle", "sinus", "kosinus", "zufall", "schildkröte", "spiele_ton", "körper", "schwerkraft", "partikel_explosion", "taste", "spielobjekt", "szene_3d", "würfel_3d", "kugel_3d", "kamera_starten", "ki_erstellen", "ki_lernen", "mehrspieler_senden", "mehrspieler_lesen", "mehrspieler_name", "shader", "shader_wert", "in"];
+  for (const k of kws) t = t.replace(new RegExp("\\b" + k + "\\b", "gi"), k);
+  const nums = [["null", "0"], ["eins", "1"], ["zwei", "2"], ["drei", "3"], ["vier", "4"], ["fünf", "5"], ["sechs", "6"], ["sieben", "7"], ["acht", "8"], ["neun", "9"], ["zehn", "10"]];
+  for (const [w, d] of nums) t = t.replace(new RegExp(`\\b${w}\\b`, "gi"), d);
+  t = t.replace(/\bgleich gleich\b/gi, "==").replace(/\bgrößer\b/gi, ">").replace(/\bkleiner\b/gi, "<").replace(/\bgleich\b/gi, "=").replace(/\bplus\b/gi, "+").replace(/\bminus\b/gi, "-").replace(/\bklammer auf\b/gi, "(").replace(/\bklammer zu\b/gi, ")").replace(/\bkomma\b/gi, ",");
+  t = t.replace(/^drucke\s+(?!\()(.+?)$/gm, (_, a) => /[+\-*/=<>]/.test(a) ? `drucke(${a})` : `drucke("${a}")`);
+  if (/^(für\s+\w+\s+in|wenn\s|solange\s|funktion\s)/.test(t) && !t.endsWith(":")) t += ":";
+  return t.replace(/\s+/g, " ").trim();
+}
 
 // ── GALLERY ──────────────────────────────────────────────────────────
-const GALLERY=[
-{t:"🧊 3D Welt",d:"Three.js 3D Szene",c:`# 3D-Szene mit deutscher API!
+const GALLERY = [{
+  t: "🧊 3D Welt",
+  d: "Three.js 3D Szene",
+  c: `# 3D-Szene mit deutscher API!
 szene_3d("#0a0a1a")
 licht_3d(5, 8, 5, "#ffffff", 1)
 licht_3d(-3, 4, -2, "#38bdf8", 0.5)
@@ -395,9 +480,11 @@ kamera_3d(6, 5, 6)
 blickpunkt_3d(0, 0, 0)
 
 funktion zeichne():
-    drehen_3d(0, 0.008, 0)`},
-
-{t:"🖐️ Kamera",d:"Körpersteuerung",c:`# Webcam-Bewegungssteuerung!
+    drehen_3d(0, 0.008, 0)`
+}, {
+  t: "🖐️ Kamera",
+  d: "Körpersteuerung",
+  c: `# Webcam-Bewegungssteuerung!
 # Erlaube Kamerazugriff wenn gefragt
 kamera_starten()
 
@@ -413,9 +500,11 @@ funktion zeichne():
     # Info
     zeichne_text(10, 20, "🖐️ Bewege dich vor der Kamera!", "#666", 13)
     zeichne_text(10, 40, "Bewegung: " + zeichenkette(ganzzahl(kamera_bewegung)), "#525280", 11)
-    zeichne_text(10, 56, "X: " + zeichenkette(ganzzahl(kamera_x)) + " Y: " + zeichenkette(ganzzahl(kamera_y)), "#525280", 11)`},
-
-{t:"🧠 KI-Train",d:"KI Trainieren",c:`# Trainiere deine eigene KI!
+    zeichne_text(10, 56, "X: " + zeichenkette(ganzzahl(kamera_x)) + " Y: " + zeichenkette(ganzzahl(kamera_y)), "#525280", 11)`
+}, {
+  t: "🧠 KI-Train",
+  d: "KI Trainieren",
+  c: `# Trainiere deine eigene KI!
 ki = ki_erstellen()
 
 # Trainings-Daten: Tiere nach [Größe, Geschwindigkeit, Gewicht]
@@ -449,9 +538,11 @@ farben = ["#f43f5e", "#38bdf8", "#facc15", "#2dd4bf"]
 für k in bereich(0, länge(klassen)):
     zeichne_rechteck(20, 240 + k * 35, 360, 28, farben[k] + "20")
     zeichne_text(30, 260 + k * 35, klassen[k], farben[k], 16)
-zeichne_text(100, 220, "🧠 Trainierte Klassen", "#666", 14)`},
-
-{t:"⚛️ Physik",d:"Physik-Engine",c:`# Physik-Engine: Bälle mit Schwerkraft
+zeichne_text(100, 220, "🧠 Trainierte Klassen", "#666", 14)`
+}, {
+  t: "⚛️ Physik",
+  d: "Physik-Engine",
+  c: `# Physik-Engine: Bälle mit Schwerkraft
 schwerkraft(0.4)
 körper(0, 380, 400, 20, {"fest": wahr, "farbe": "#1a1a2e"})
 körper(100, 300, 150, 10, {"fest": wahr, "farbe": "#38bdf8"})
@@ -463,9 +554,11 @@ funktion zeichne():
     fülle("#08080f")
     physik_schritt()
     alle_körper_zeichnen()
-    zeichne_text(10, 18, "⚛️ Physik-Engine", "#525280", 13)`},
-
-{t:"🎮 Pong",d:"Tastatur-Spiel",c:`# PONG — Pfeiltasten ↑↓
+    zeichne_text(10, 18, "⚛️ Physik-Engine", "#525280", 13)`
+}, {
+  t: "🎮 Pong",
+  d: "Tastatur-Spiel",
+  c: `# PONG — Pfeiltasten ↑↓
 schläger = spielobjekt(20, 170, 12, 60, "#f43f5e")
 ki_s = spielobjekt(368, 170, 12, 60, "#38bdf8")
 ball = spielobjekt(195, 195, 10, 10, "#facc15")
@@ -512,9 +605,11 @@ funktion zeichne():
     objekt_zeichnen(ki_s)
     objekt_zeichnen(ball)
     punkte_anzeigen(140, 35, p_l, {"farbe": "#f43f5e"})
-    punkte_anzeigen(240, 35, p_r, {"farbe": "#38bdf8"})`},
-
-{t:"🎭 Partikel",d:"Klick-Effekte",c:`# Klicke für Partikel-Explosionen!
+    punkte_anzeigen(240, 35, p_r, {"farbe": "#38bdf8"})`
+}, {
+  t: "🎭 Partikel",
+  d: "Klick-Effekte",
+  c: `# Klicke für Partikel-Explosionen!
 funktion zeichne():
     fülle("#08080f")
     partikel_regen(0, "#38bdf855", 2)
@@ -523,23 +618,29 @@ funktion zeichne():
         partikel_explosion(maus_x, maus_y, farbe, 30)
         spiele_ton(200 + maus_y, 0.1)
     partikel_aktualisieren()
-    zeichne_text(100, 390, "Klicke irgendwo!", "#333", 12)`},
-
-{t:"🐢 Stern",d:"Schildkröte",c:`# Schildkröte zeichnet einen Stern
+    zeichne_text(100, 390, "Klicke irgendwo!", "#333", 12)`
+}, {
+  t: "🐢 Stern",
+  d: "Schildkröte",
+  c: `# Schildkröte zeichnet einen Stern
 schildkröte.farbe("#facc15")
 schildkröte.breite(3)
 für i in bereich(0, 5):
     schildkröte.vorwärts(150)
-    schildkröte.rechts(144)`},
-
-{t:"🌀 Spirale",d:"Regenbogen",c:`schildkröte.breite(2)
+    schildkröte.rechts(144)`
+}, {
+  t: "🌀 Spirale",
+  d: "Regenbogen",
+  c: `schildkröte.breite(2)
 für i in bereich(0, 150):
     farbe = "hsl(" + zeichenkette(i * 2.4) + ",80%,60%)"
     schildkröte.farbe(farbe)
     schildkröte.vorwärts(i * 1.5)
-    schildkröte.rechts(91)`},
-
-{t:"🌳 Fraktal",d:"Rekursiver Baum",c:`# Fraktalbaum — rekursive Verzweigung
+    schildkröte.rechts(91)`
+}, {
+  t: "🌳 Fraktal",
+  d: "Rekursiver Baum",
+  c: `# Fraktalbaum — rekursive Verzweigung
 funktion ast(tiefe, länge, winkel):
     wenn tiefe == 0:
         zurückgeben nichts
@@ -565,9 +666,11 @@ schildkröte.stift_hoch()
 schildkröte.gehe_zu(200, 380)
 schildkröte.stift_runter()
 schildkröte.links(90)
-ast(8, 65, 28)`},
-
-{t:"🪐 Orbit",d:"Animation",c:`funktion zeichne():
+ast(8, 65, 28)`
+}, {
+  t: "🪐 Orbit",
+  d: "Animation",
+  c: `funktion zeichne():
     fülle("#050510")
     für i in bereich(0, 40):
         sx = (i * 137 + rahmen * 0.2) % 400
@@ -579,9 +682,11 @@ ast(8, 65, 28)`},
         winkel = rahmen * (0.025 - p * 0.003) + p * 1.2
         x = 200 + abst * kosinus(winkel)
         y = 200 + abst * sinus(winkel)
-        zeichne_kreis(x, y, 5 + p * 2, "hsl(" + zeichenkette(p * 55 + 180) + ",70%,55%)")`},
-
-{t:"📊 Sortier",d:"Bubblesort Live",c:`# Bubblesort — Schritt für Schritt animiert
+        zeichne_kreis(x, y, 5 + p * 2, "hsl(" + zeichenkette(p * 55 + 180) + ",70%,55%)")`
+}, {
+  t: "📊 Sortier",
+  d: "Bubblesort Live",
+  c: `# Bubblesort — Schritt für Schritt animiert
 werte = liste()
 für i in bereich(0, 50):
     werte.anhängen(zufall(10, 380))
@@ -617,9 +722,11 @@ funktion zeichne():
         zeichne_rechteck(i * b, 400 - werte[i], b - 1, werte[i], farbe)
     zeichne_text(10, 18, "Bubblesort — Tausch: " + zeichenkette(tausch), "#e2e2f0", 12)
     wenn fertig:
-        zeichne_text(130, 200, "✓ Sortiert!", "#2dd4bf", 18)`},
-
-{t:"👥 Multi",d:"Mehrspieler",c:`# Mehrspieler — öffne dieses Artifact in 2 Tabs!
+        zeichne_text(130, 200, "✓ Sortiert!", "#2dd4bf", 18)`
+}, {
+  t: "👥 Multi",
+  d: "Mehrspieler",
+  c: `# Mehrspieler — öffne dieses Artifact in 2 Tabs!
 mehrspieler_name("spieler_" + zeichenkette(zufall(1, 999)))
 farbe_id = zufall(0, 360)
 
@@ -646,15 +753,19 @@ funktion zeichne():
     zeichne_text(maus_x - 15, maus_y - 26, mein_name(), meine_farbe, 9)
     # Info
     zeichne_text(10, 18, "👥 Spieler: " + zeichenkette(mehrspieler_anzahl()), "#666", 12)
-    zeichne_text(10, 36, "Öffne in 2 Tabs!", "#525280", 10)`},
-
-{t:"🌐 Shader",d:"Julia-Fraktal",c:`# GPU Julia-Fraktal — Maus bewegt den Parameter!
+    zeichne_text(10, 36, "Öffne in 2 Tabs!", "#525280", 10)`
+}, {
+  t: "🌐 Shader",
+  d: "Julia-Fraktal",
+  c: `# GPU Julia-Fraktal — Maus bewegt den Parameter!
 shader("precision highp float; uniform float zeit; uniform vec2 auflösung; uniform vec2 maus; void main(){ vec2 uv=(gl_FragCoord.xy-auflösung*0.5)/auflösung.y*2.5; vec2 c=vec2(cos(zeit*0.3)*0.7,sin(zeit*0.23)*0.7); if(maus.x>0.0)c=(maus/auflösung-0.5)*2.5; vec2 z=uv; float i; for(i=0.0;i<128.0;i++){if(dot(z,z)>4.0)break; z=vec2(z.x*z.x-z.y*z.y,2.0*z.x*z.y)+c;} float t=i/128.0; float r=0.5+0.5*cos(3.0+t*6.28+0.0); float g=0.5+0.5*cos(3.0+t*6.28+2.1); float b=0.5+0.5*cos(3.0+t*6.28+4.2); if(i>=128.0){r=0.0;g=0.0;b=0.0;} gl_FragColor=vec4(r,g,b,1.0); }")
 
 funktion zeichne():
-    x = 0`},
-
-{t:"🧬 Life",d:"Conway's Game of Life",c:`# Conway's Game of Life — Zellulärer Automat
+    x = 0`
+}, {
+  t: "🧬 Life",
+  d: "Conway's Game of Life",
+  c: `# Conway's Game of Life — Zellulärer Automat
 größe = 40
 zellen = liste()
 nächste = liste()
@@ -698,12 +809,24 @@ funktion zeichne():
             zellen[y][x] = nächste[y][x]
             wenn zellen[y][x]:
                 zeichne_rechteck(x * 10, y * 10, 9, 9, "#2dd4bf")
-    zeichne_text(10, 396, "Generation: " + zeichenkette(gen), "#525280", 10)`},
-];
+    zeichne_text(10, 396, "Generation: " + zeichenkette(gen), "#525280", 10)`
+}];
 
 // ── COLORS ───────────────────────────────────────────────────────────
-const C={R:"#f43f5e",B:"#38bdf8",T:"#2dd4bf",Y:"#facc15",P:"#a78bfa",O:"#fb923c",
-  BG:"#050508",S1:"#0a0a12",S2:"#0f0f1a",BD:"#1a1a2e",TX:"#e2e2f0",DM:"#525280"};
+const C = {
+  R: "#f43f5e",
+  B: "#38bdf8",
+  T: "#2dd4bf",
+  Y: "#facc15",
+  P: "#a78bfa",
+  O: "#fb923c",
+  BG: "#050508",
+  S1: "#0a0a12",
+  S2: "#0f0f1a",
+  BD: "#1a1a2e",
+  TX: "#e2e2f0",
+  DM: "#525280"
+};
 
 // ══════════════════════════════════════════════════════════════════════
 //  C O M P O N E N T
@@ -720,7 +843,11 @@ function BlackSwan() {
   const shaderRef = useRef(null); // WebGL shader canvas
   const consoleRef = useRef(null);
   const animRef = useRef(null);
-  const mouseRef = useRef({x:200,y:200,down:false});
+  const mouseRef = useRef({
+    x: 200,
+    y: 200,
+    down: false
+  });
   const keysRef = useRef({});
   const audioRef = useRef(null);
   const threeRef = useRef(null);
@@ -728,7 +855,14 @@ function BlackSwan() {
   const mpPollRef = useRef(null); // Multiplayer polling interval
 
   // Camera (webcam) tracking
-  const camRef = useRef({active:false,x:200,y:200,motion:0,video:null,prevFrame:null});
+  const camRef = useRef({
+    active: false,
+    x: 200,
+    y: 200,
+    motion: 0,
+    video: null,
+    prevFrame: null
+  });
 
   // Panels
   const [showPy, setShowPy] = useState(false);
@@ -757,249 +891,497 @@ function BlackSwan() {
 
   // ── KEYBOARD ───────────────────────────────────────────────────────
   useEffect(() => {
-    const km={"arrowleft":"links","arrowright":"rechts","arrowup":"hoch","arrowdown":"runter"," ":"leertaste"};
-    const down=e=>{const k=e.key.toLowerCase();keysRef.current[k]=true;if(km[k])keysRef.current[km[k]]=true;
-      if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k)&&isAnim)e.preventDefault();};
-    const up=e=>{const k=e.key.toLowerCase();keysRef.current[k]=false;if(km[k])keysRef.current[km[k]]=false;};
-    window.addEventListener("keydown",down);window.addEventListener("keyup",up);
-    return()=>{window.removeEventListener("keydown",down);window.removeEventListener("keyup",up);};
+    const km = {
+      "arrowleft": "links",
+      "arrowright": "rechts",
+      "arrowup": "hoch",
+      "arrowdown": "runter",
+      " ": "leertaste"
+    };
+    const down = e => {
+      const k = e.key.toLowerCase();
+      keysRef.current[k] = true;
+      if (km[k]) keysRef.current[km[k]] = true;
+      if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(k) && isAnim) e.preventDefault();
+    };
+    const up = e => {
+      const k = e.key.toLowerCase();
+      keysRef.current[k] = false;
+      if (km[k]) keysRef.current[km[k]] = false;
+    };
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
   }, [isAnim]);
 
   // ── VOICE INIT ─────────────────────────────────────────────────────
-  useEffect(()=>{
-    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;setVoiceOK(true);
-    const r=new SR();r.lang="de-DE";r.continuous=true;r.interimResults=true;
-    r.onresult=ev=>{let fin="",intr="";
-      for(let i=ev.resultIndex;i<ev.results.length;i++){if(ev.results[i].isFinal)fin+=ev.results[i][0].transcript;else intr+=ev.results[i][0].transcript;}
-      setInterim(intr);if(fin)setTranscript(p=>p+(p?" ":"")+fin);};
-    r.onerror=()=>{};r.onend=()=>setListening(false);recRef.current=r;
-  },[]);
+  useEffect(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+    setVoiceOK(true);
+    const r = new SR();
+    r.lang = "de-DE";
+    r.continuous = true;
+    r.interimResults = true;
+    r.onresult = ev => {
+      let fin = "",
+        intr = "";
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        if (ev.results[i].isFinal) fin += ev.results[i][0].transcript;else intr += ev.results[i][0].transcript;
+      }
+      setInterim(intr);
+      if (fin) setTranscript(p => p + (p ? " " : "") + fin);
+    };
+    r.onerror = () => {};
+    r.onend = () => setListening(false);
+    recRef.current = r;
+  }, []);
 
   // ── CANVAS MOUSE + TOUCH (overlay approach for all modes) ────────
   const mouseOverlayRef = useRef(null);
-  useEffect(()=>{
-    const cv=mouseOverlayRef.current;if(!cv)return;
-    const rect=()=>cv.getBoundingClientRect();
-    const sp=(cx,cy)=>{const r=rect();mouseRef.current.x=((cx-r.left)/r.width)*400;mouseRef.current.y=((cy-r.top)/r.height)*400;};
-    const mm=e=>sp(e.clientX,e.clientY),md=()=>{mouseRef.current.down=true},mu=()=>{mouseRef.current.down=false};
-    const ts=e=>{e.preventDefault();const t=e.touches[0];sp(t.clientX,t.clientY);mouseRef.current.down=true;};
-    const tm=e=>{e.preventDefault();const t=e.touches[0];sp(t.clientX,t.clientY);};
-    const te=e=>{e.preventDefault();mouseRef.current.down=false;};
-    cv.addEventListener("mousemove",mm);cv.addEventListener("mousedown",md);window.addEventListener("mouseup",mu);
-    cv.addEventListener("touchstart",ts,{passive:false});cv.addEventListener("touchmove",tm,{passive:false});cv.addEventListener("touchend",te,{passive:false});
-    return()=>{cv.removeEventListener("mousemove",mm);cv.removeEventListener("mousedown",md);window.removeEventListener("mouseup",mu);
-      cv.removeEventListener("touchstart",ts);cv.removeEventListener("touchmove",tm);cv.removeEventListener("touchend",te);};
-  },[]);
+  useEffect(() => {
+    const cv = mouseOverlayRef.current;
+    if (!cv) return;
+    const rect = () => cv.getBoundingClientRect();
+    const sp = (cx, cy) => {
+      const r = rect();
+      mouseRef.current.x = (cx - r.left) / r.width * 400;
+      mouseRef.current.y = (cy - r.top) / r.height * 400;
+    };
+    const mm = e => sp(e.clientX, e.clientY),
+      md = () => {
+        mouseRef.current.down = true;
+      },
+      mu = () => {
+        mouseRef.current.down = false;
+      };
+    const ts = e => {
+      e.preventDefault();
+      const t = e.touches[0];
+      sp(t.clientX, t.clientY);
+      mouseRef.current.down = true;
+    };
+    const tm = e => {
+      e.preventDefault();
+      const t = e.touches[0];
+      sp(t.clientX, t.clientY);
+    };
+    const te = e => {
+      e.preventDefault();
+      mouseRef.current.down = false;
+    };
+    cv.addEventListener("mousemove", mm);
+    cv.addEventListener("mousedown", md);
+    window.addEventListener("mouseup", mu);
+    cv.addEventListener("touchstart", ts, {
+      passive: false
+    });
+    cv.addEventListener("touchmove", tm, {
+      passive: false
+    });
+    cv.addEventListener("touchend", te, {
+      passive: false
+    });
+    return () => {
+      cv.removeEventListener("mousemove", mm);
+      cv.removeEventListener("mousedown", md);
+      window.removeEventListener("mouseup", mu);
+      cv.removeEventListener("touchstart", ts);
+      cv.removeEventListener("touchmove", tm);
+      cv.removeEventListener("touchend", te);
+    };
+  }, []);
 
   // ── WEBCAM MOTION DETECTION ────────────────────────────────────────
-  const startCamera = useCallback(async ()=>{
-    if(camRef.current.active)return;
-    try{
-      const stream=await navigator.mediaDevices.getUserMedia({video:{width:160,height:120,facingMode:"user"}});
-      const v=document.createElement("video");v.srcObject=stream;v.play();
-      camRef.current={active:true,x:200,y:200,motion:0,video:v,prevFrame:null};
+  const startCamera = useCallback(async () => {
+    if (camRef.current.active) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: 160,
+          height: 120,
+          facingMode: "user"
+        }
+      });
+      const v = document.createElement("video");
+      v.srcObject = stream;
+      v.play();
+      camRef.current = {
+        active: true,
+        x: 200,
+        y: 200,
+        motion: 0,
+        video: v,
+        prevFrame: null
+      };
       setCamActive(true);
-    }catch(e){console.log("Kamera nicht verfügbar");}
-  },[]);
-
-  const processCamera = useCallback(()=>{
-    const cam=camRef.current;if(!cam.active||!cam.video||cam.video.readyState<2)return;
-    const cv=document.createElement("canvas");cv.width=40;cv.height=30;
-    const ctx=cv.getContext("2d");
-    ctx.drawImage(cam.video,0,0,40,30);
-    const data=ctx.getImageData(0,0,40,30).data;
-    const curr=new Float32Array(40*30);
-    for(let i=0;i<40*30;i++)curr[i]=(data[i*4]+data[i*4+1]+data[i*4+2])/3;
-    if(cam.prevFrame){
-      let totalDiff=0,cx=0,cy=0,count=0;
-      for(let y=0;y<30;y++){for(let x=0;x<40;x++){
-        const diff=Math.abs(curr[y*40+x]-cam.prevFrame[y*40+x]);
-        if(diff>15){totalDiff+=diff;cx+=x;cy+=y;count++;}
-      }}
-      cam.motion=Math.min(100,totalDiff/500);
-      if(count>0){cam.x=(1-cx/count/40)*400;cam.y=cy/count/30*400;}// Mirror X
+    } catch (e) {
+      console.log("Kamera nicht verfügbar");
     }
-    cam.prevFrame=curr;
-  },[]);
+  }, []);
+  const processCamera = useCallback(() => {
+    const cam = camRef.current;
+    if (!cam.active || !cam.video || cam.video.readyState < 2) return;
+    const cv = document.createElement("canvas");
+    cv.width = 40;
+    cv.height = 30;
+    const ctx = cv.getContext("2d");
+    ctx.drawImage(cam.video, 0, 0, 40, 30);
+    const data = ctx.getImageData(0, 0, 40, 30).data;
+    const curr = new Float32Array(40 * 30);
+    for (let i = 0; i < 40 * 30; i++) curr[i] = (data[i * 4] + data[i * 4 + 1] + data[i * 4 + 2]) / 3;
+    if (cam.prevFrame) {
+      let totalDiff = 0,
+        cx = 0,
+        cy = 0,
+        count = 0;
+      for (let y = 0; y < 30; y++) {
+        for (let x = 0; x < 40; x++) {
+          const diff = Math.abs(curr[y * 40 + x] - cam.prevFrame[y * 40 + x]);
+          if (diff > 15) {
+            totalDiff += diff;
+            cx += x;
+            cy += y;
+            count++;
+          }
+        }
+      }
+      cam.motion = Math.min(100, totalDiff / 500);
+      if (count > 0) {
+        cam.x = (1 - cx / count / 40) * 400;
+        cam.y = cy / count / 30 * 400;
+      } // Mirror X
+    }
+    cam.prevFrame = curr;
+  }, []);
 
   // ── THREE.JS SETUP ─────────────────────────────────────────────────
-  const init3D = useCallback(()=>{
-    if(threeRef.current)return threeRef.current;
-    const cv=canvas3DRef.current;if(!cv)return null;
-    try{
-      const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:false});
-      renderer.setSize(400,400);renderer.setPixelRatio(1);
-      renderer.shadowMap.enabled=true;
-      const scene=new THREE.Scene();
-      const camera=new THREE.PerspectiveCamera(55,1,0.1,1000);
-      camera.position.set(0,3,7);camera.lookAt(0,0,0);
-      const ambient=new THREE.AmbientLight(0x404060,0.6);scene.add(ambient);
-      threeRef.current={renderer,scene,camera,ambient,meshes:[],lights:[]};
+  const init3D = useCallback(() => {
+    if (threeRef.current) return threeRef.current;
+    const cv = canvas3DRef.current;
+    if (!cv) return null;
+    try {
+      const renderer = new THREE.WebGLRenderer({
+        canvas: cv,
+        antialias: true,
+        alpha: false
+      });
+      renderer.setSize(400, 400);
+      renderer.setPixelRatio(1);
+      renderer.shadowMap.enabled = true;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
+      camera.position.set(0, 3, 7);
+      camera.lookAt(0, 0, 0);
+      const ambient = new THREE.AmbientLight(0x404060, 0.6);
+      scene.add(ambient);
+      threeRef.current = {
+        renderer,
+        scene,
+        camera,
+        ambient,
+        meshes: [],
+        lights: []
+      };
       return threeRef.current;
-    }catch(e){return null;}
-  },[]);
-
-  const render3D = useCallback((d3,camData,rot)=>{
-    const three=init3D();if(!three)return;
-    const{renderer,scene,camera}=three;
+    } catch (e) {
+      return null;
+    }
+  }, []);
+  const render3D = useCallback((d3, camData, rot) => {
+    const three = init3D();
+    if (!three) return;
+    const {
+      renderer,
+      scene,
+      camera
+    } = three;
     // Clear old meshes and lights
-    for(const m of three.meshes)scene.remove(m);
-    for(const l of three.lights)scene.remove(l);
-    three.meshes=[];three.lights=[];
-    scene.background=new THREE.Color("#0a0a14");
-    for(const d of d3){
-      if(d.t==="box"){
-        const g=new THREE.BoxGeometry(d.s,d.s,d.s);
-        const m=new THREE.MeshPhongMaterial({color:d.c});
-        const mesh=new THREE.Mesh(g,m);mesh.position.set(d.x,d.y,d.z);
-        mesh.rotation.x=rot.x;mesh.rotation.y=rot.y;
-        scene.add(mesh);three.meshes.push(mesh);
-      }else if(d.t==="sphere"){
-        const g=new THREE.SphereGeometry(d.r,24,24);
-        const m=new THREE.MeshPhongMaterial({color:d.c});
-        const mesh=new THREE.Mesh(g,m);mesh.position.set(d.x,d.y,d.z);
-        scene.add(mesh);three.meshes.push(mesh);
-      }else if(d.t==="cyl"){
-        const g=new THREE.CylinderGeometry(d.r,d.r,d.h,16);
-        const m=new THREE.MeshPhongMaterial({color:d.c});
-        const mesh=new THREE.Mesh(g,m);mesh.position.set(d.x,d.y,d.z);
-        scene.add(mesh);three.meshes.push(mesh);
-      }else if(d.t==="plane"){
-        const g=new THREE.PlaneGeometry(d.w,d.h);
-        const m=new THREE.MeshPhongMaterial({color:d.c,side:THREE.DoubleSide});
-        const mesh=new THREE.Mesh(g,m);mesh.position.set(d.x,d.y,d.z);
-        mesh.rotation.x=-Math.PI/2;
-        scene.add(mesh);three.meshes.push(mesh);
-      }else if(d.t==="light"){
-        const l=new THREE.DirectionalLight(new THREE.Color(d.c),d.i||1);
-        l.position.set(d.x,d.y,d.z);
-        scene.add(l);three.lights.push(l);
+    for (const m of three.meshes) scene.remove(m);
+    for (const l of three.lights) scene.remove(l);
+    three.meshes = [];
+    three.lights = [];
+    scene.background = new THREE.Color("#0a0a14");
+    for (const d of d3) {
+      if (d.t === "box") {
+        const g = new THREE.BoxGeometry(d.s, d.s, d.s);
+        const m = new THREE.MeshPhongMaterial({
+          color: d.c
+        });
+        const mesh = new THREE.Mesh(g, m);
+        mesh.position.set(d.x, d.y, d.z);
+        mesh.rotation.x = rot.x;
+        mesh.rotation.y = rot.y;
+        scene.add(mesh);
+        three.meshes.push(mesh);
+      } else if (d.t === "sphere") {
+        const g = new THREE.SphereGeometry(d.r, 24, 24);
+        const m = new THREE.MeshPhongMaterial({
+          color: d.c
+        });
+        const mesh = new THREE.Mesh(g, m);
+        mesh.position.set(d.x, d.y, d.z);
+        scene.add(mesh);
+        three.meshes.push(mesh);
+      } else if (d.t === "cyl") {
+        const g = new THREE.CylinderGeometry(d.r, d.r, d.h, 16);
+        const m = new THREE.MeshPhongMaterial({
+          color: d.c
+        });
+        const mesh = new THREE.Mesh(g, m);
+        mesh.position.set(d.x, d.y, d.z);
+        scene.add(mesh);
+        three.meshes.push(mesh);
+      } else if (d.t === "plane") {
+        const g = new THREE.PlaneGeometry(d.w, d.h);
+        const m = new THREE.MeshPhongMaterial({
+          color: d.c,
+          side: THREE.DoubleSide
+        });
+        const mesh = new THREE.Mesh(g, m);
+        mesh.position.set(d.x, d.y, d.z);
+        mesh.rotation.x = -Math.PI / 2;
+        scene.add(mesh);
+        three.meshes.push(mesh);
+      } else if (d.t === "light") {
+        const l = new THREE.DirectionalLight(new THREE.Color(d.c), d.i || 1);
+        l.position.set(d.x, d.y, d.z);
+        scene.add(l);
+        three.lights.push(l);
       }
     }
-    if(camData){camera.position.set(camData.x,camData.y,camData.z);camera.lookAt(camData.lx,camData.ly,camData.lz);}
-    renderer.render(scene,camera);
-  },[init3D]);
+    if (camData) {
+      camera.position.set(camData.x, camData.y, camData.z);
+      camera.lookAt(camData.lx, camData.ly, camData.lz);
+    }
+    renderer.render(scene, camera);
+  }, [init3D]);
 
   // ── SHADER RENDERER (cached) ─────────────────────────────────────
-  const shaderCacheRef = useRef({src:null,prog:null});
-  const initShader = useCallback((fragSrc)=>{
-    const cv=shaderRef.current;if(!cv)return null;
-    let gl=glRef.current;
-    if(!gl){gl=cv.getContext("webgl")||cv.getContext("experimental-webgl");glRef.current=gl;}
-    if(!gl)return null;
+  const shaderCacheRef = useRef({
+    src: null,
+    prog: null
+  });
+  const initShader = useCallback(fragSrc => {
+    const cv = shaderRef.current;
+    if (!cv) return null;
+    let gl = glRef.current;
+    if (!gl) {
+      gl = cv.getContext("webgl") || cv.getContext("experimental-webgl");
+      glRef.current = gl;
+    }
+    if (!gl) return null;
     // Return cached program if source hasn't changed
-    if(shaderCacheRef.current.src===fragSrc&&shaderCacheRef.current.prog)return{prog:shaderCacheRef.current.prog,gl};
+    if (shaderCacheRef.current.src === fragSrc && shaderCacheRef.current.prog) return {
+      prog: shaderCacheRef.current.prog,
+      gl
+    };
     // Clean up old program
-    if(shaderCacheRef.current.prog)gl.deleteProgram(shaderCacheRef.current.prog);
-    const vs=`attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`;
-    const compile=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh;};
-    const prog=gl.createProgram();
-    gl.attachShader(prog,compile(gl.VERTEX_SHADER,vs));
-    gl.attachShader(prog,compile(gl.FRAGMENT_SHADER,fragSrc));
+    if (shaderCacheRef.current.prog) gl.deleteProgram(shaderCacheRef.current.prog);
+    const vs = `attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`;
+    const compile = (t, s) => {
+      const sh = gl.createShader(t);
+      gl.shaderSource(sh, s);
+      gl.compileShader(sh);
+      return sh;
+    };
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fragSrc));
     gl.linkProgram(prog);
-    if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){shaderCacheRef.current={src:null,prog:null};return null;}
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      shaderCacheRef.current = {
+        src: null,
+        prog: null
+      };
+      return null;
+    }
     gl.useProgram(prog);
-    const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
-    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
-    const pos=gl.getAttribLocation(prog,"p");gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
-    shaderCacheRef.current={src:fragSrc,prog};
-    return{prog,gl};
-  },[]);
-
-  const renderShader = useCallback((fragSrc,time)=>{
-    const r=initShader(fragSrc);if(!r)return;
-    const{prog,gl}=r;
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    const pos = gl.getAttribLocation(prog, "p");
+    gl.enableVertexAttribArray(pos);
+    gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+    shaderCacheRef.current = {
+      src: fragSrc,
+      prog
+    };
+    return {
+      prog,
+      gl
+    };
+  }, []);
+  const renderShader = useCallback((fragSrc, time) => {
+    const r = initShader(fragSrc);
+    if (!r) return;
+    const {
+      prog,
+      gl
+    } = r;
     gl.useProgram(prog);
-    gl.viewport(0,0,400,400);
-    const tLoc=gl.getUniformLocation(prog,"zeit");if(tLoc)gl.uniform1f(tLoc,time);
-    const rLoc=gl.getUniformLocation(prog,"auflösung");if(rLoc)gl.uniform2f(rLoc,400,400);
-    const mLoc=gl.getUniformLocation(prog,"maus");if(mLoc)gl.uniform2f(mLoc,mouseRef.current.x,400-mouseRef.current.y);
-    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
-  },[initShader]);
+    gl.viewport(0, 0, 400, 400);
+    const tLoc = gl.getUniformLocation(prog, "zeit");
+    if (tLoc) gl.uniform1f(tLoc, time);
+    const rLoc = gl.getUniformLocation(prog, "auflösung");
+    if (rLoc) gl.uniform2f(rLoc, 400, 400);
+    const mLoc = gl.getUniformLocation(prog, "maus");
+    if (mLoc) gl.uniform2f(mLoc, mouseRef.current.x, 400 - mouseRef.current.y);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }, [initShader]);
 
   // ── MULTIPLAYER POLLING ────────────────────────────────────────────
   const mpDataRef = useRef({});
-  const pollMultiplayer = useCallback(async()=>{
-    if(!window.storage)return;
-    try{
-      const keys=await window.storage.list("mp:",true);
-      if(keys&&keys.keys){
-        const fresh={};
-        for(const k of keys.keys){
-          try{
-            const r=await window.storage.get(k,true);
-            if(r&&r.value){const d=JSON.parse(r.value);
-              if(Date.now()-d.t<10000)fresh[d.id]=d;} // 10s timeout
-          }catch(e){}
+  const pollMultiplayer = useCallback(async () => {
+    if (!window.storage) return;
+    try {
+      const keys = await window.storage.list("mp:", true);
+      if (keys && keys.keys) {
+        const fresh = {};
+        for (const k of keys.keys) {
+          try {
+            const r = await window.storage.get(k, true);
+            if (r && r.value) {
+              const d = JSON.parse(r.value);
+              if (Date.now() - d.t < 10000) fresh[d.id] = d;
+            } // 10s timeout
+          } catch (e) {}
         }
-        mpDataRef.current=fresh;
+        mpDataRef.current = fresh;
       }
-    }catch(e){}
-  },[]);
+    } catch (e) {}
+  }, []);
 
   // Start/stop multiplayer polling
-  const startMPPoll = useCallback(()=>{
-    if(mpPollRef.current)return;
-    mpPollRef.current=setInterval(pollMultiplayer,500);
-  },[pollMultiplayer]);
-  const stopMPPoll = useCallback(()=>{
-    if(mpPollRef.current){clearInterval(mpPollRef.current);mpPollRef.current=null;}
-  },[]);
-  useEffect(()=>()=>stopMPPoll(),[stopMPPoll]);
+  const startMPPoll = useCallback(() => {
+    if (mpPollRef.current) return;
+    mpPollRef.current = setInterval(pollMultiplayer, 500);
+  }, [pollMultiplayer]);
+  const stopMPPoll = useCallback(() => {
+    if (mpPollRef.current) {
+      clearInterval(mpPollRef.current);
+      mpPollRef.current = null;
+    }
+  }, []);
+  useEffect(() => () => stopMPPoll(), [stopMPPoll]);
 
   // ── RENDER 2D CANVAS ───────────────────────────────────────────────
-  const renderCanvas = useCallback((draws,turtle)=>{
-    const cv=canvasRef.current;if(!cv)return;
-    const ctx=cv.getContext("2d");
-    ctx.clearRect(0,0,400,400);ctx.fillStyle="#08080f";ctx.fillRect(0,0,400,400);
-    ctx.strokeStyle="#ffffff06";ctx.lineWidth=0.5;
-    for(let x=0;x<400;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,400);ctx.stroke();}
-    for(let y=0;y<400;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(400,y);ctx.stroke();}
-    for(const d of draws){
-      if(d.t==="f"){ctx.fillStyle=d.c;ctx.fillRect(0,0,400,400);continue;}
-      ctx.fillStyle=d.c||"#fff";ctx.strokeStyle=d.c||"#fff";
-      if(d.t==="c"){ctx.beginPath();ctx.arc(d.x,d.y,Math.max(0.5,d.r),0,Math.PI*2);ctx.fill();}
-      else if(d.t==="l"){ctx.lineWidth=d.w||2;ctx.beginPath();ctx.moveTo(d.x1,d.y1);ctx.lineTo(d.x2,d.y2);ctx.stroke();}
-      else if(d.t==="r"){ctx.fillRect(d.x,d.y,d.w,d.h);}
-      else if(d.t==="tx"){ctx.font=`${d.s||16}px 'Outfit',sans-serif`;ctx.fillText(d.txt,d.x,d.y);}
+  const renderCanvas = useCallback((draws, turtle) => {
+    const cv = canvasRef.current;
+    if (!cv) return;
+    const ctx = cv.getContext("2d");
+    ctx.clearRect(0, 0, 400, 400);
+    ctx.fillStyle = "#08080f";
+    ctx.fillRect(0, 0, 400, 400);
+    ctx.strokeStyle = "#ffffff06";
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x < 400; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, 400);
+      ctx.stroke();
     }
-    if(turtle&&turtle.vis){
-      const ta=turtle.a*Math.PI/180;ctx.save();ctx.translate(turtle.x,turtle.y);ctx.rotate(ta);
-      ctx.beginPath();ctx.moveTo(10,0);ctx.lineTo(-6,-6);ctx.lineTo(-3,0);ctx.lineTo(-6,6);ctx.closePath();
-      ctx.fillStyle="#f43f5ecc";ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=1;ctx.stroke();ctx.restore();
+    for (let y = 0; y < 400; y += 40) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(400, y);
+      ctx.stroke();
     }
-  },[]);
+    for (const d of draws) {
+      if (d.t === "f") {
+        ctx.fillStyle = d.c;
+        ctx.fillRect(0, 0, 400, 400);
+        continue;
+      }
+      ctx.fillStyle = d.c || "#fff";
+      ctx.strokeStyle = d.c || "#fff";
+      if (d.t === "c") {
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, Math.max(0.5, d.r), 0, Math.PI * 2);
+        ctx.fill();
+      } else if (d.t === "l") {
+        ctx.lineWidth = d.w || 2;
+        ctx.beginPath();
+        ctx.moveTo(d.x1, d.y1);
+        ctx.lineTo(d.x2, d.y2);
+        ctx.stroke();
+      } else if (d.t === "r") {
+        ctx.fillRect(d.x, d.y, d.w, d.h);
+      } else if (d.t === "tx") {
+        ctx.font = `${d.s || 16}px 'Outfit',sans-serif`;
+        ctx.fillText(d.txt, d.x, d.y);
+      }
+    }
+    if (turtle && turtle.vis) {
+      const ta = turtle.a * Math.PI / 180;
+      ctx.save();
+      ctx.translate(turtle.x, turtle.y);
+      ctx.rotate(ta);
+      ctx.beginPath();
+      ctx.moveTo(10, 0);
+      ctx.lineTo(-6, -6);
+      ctx.lineTo(-3, 0);
+      ctx.lineTo(-6, 6);
+      ctx.closePath();
+      ctx.fillStyle = "#f43f5ecc";
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }, []);
 
   // ── STOP ───────────────────────────────────────────────────────────
-  const stopAnim = useCallback(()=>{
-    if(animRef.current){cancelAnimationFrame(animRef.current);animRef.current=null;}
-    setIsAnim(false);setIs3D(false);setIsShader(false);stopMPPoll();
-    shaderCacheRef.current={src:null,prog:null};
-  },[stopMPPoll]);
+  const stopAnim = useCallback(() => {
+    if (animRef.current) {
+      cancelAnimationFrame(animRef.current);
+      animRef.current = null;
+    }
+    setIsAnim(false);
+    setIs3D(false);
+    setIsShader(false);
+    stopMPPoll();
+    shaderCacheRef.current = {
+      src: null,
+      prog: null
+    };
+  }, [stopMPPoll]);
 
   // ── RUN CODE ───────────────────────────────────────────────────────
-  const runCode = useCallback(()=>{
+  const runCode = useCallback(() => {
     stopAnim();
-    const js=compileGerman(code);
-    const output=[],errors=[],draws=[];
-    if(!audioRef.current){try{audioRef.current=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
-
-    const camCtrl={start:()=>startCamera(),stop:()=>{camRef.current.active=false;setCamActive(false);}};
-    const storageAPI=window.storage||null;
-
-    try{
-      const allRT=`${RUNTIME}\n${TURTLE_RT}\n${SOUND_RT}\n${PHYSICS_RT}\n${PARTICLE_RT}\n${GAME_RT}\n${CAMERA_RT}\n${KI_RT}\n${THREE_RT}\n${MULTI_RT}\n${SHADER_RT}\n`;
-      const hasAnim=/^funktion zeichne\(\)\s*:/m.test(code);
-      const has3D=/szene_3d|würfel_3d|kugel_3d|zylinder_3d|ebene_3d/.test(code);
-      const hasCam=/kamera_starten/.test(code);
-      const hasShader=/\bshader\s*\(/.test(code);
-      const hasMP=/mehrspieler_/.test(code);
-
-      if(hasCam)startCamera();
-      if(hasMP)startMPPoll();
-
-      if(hasAnim){
-        const scopedCode=`${allRT}
+    const js = compileGerman(code);
+    const output = [],
+      errors = [],
+      draws = [];
+    if (!audioRef.current) {
+      try {
+        audioRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {}
+    }
+    const camCtrl = {
+      start: () => startCamera(),
+      stop: () => {
+        camRef.current.active = false;
+        setCamActive(false);
+      }
+    };
+    const storageAPI = window.storage || null;
+    try {
+      const allRT = `${RUNTIME}\n${TURTLE_RT}\n${SOUND_RT}\n${PHYSICS_RT}\n${PARTICLE_RT}\n${GAME_RT}\n${CAMERA_RT}\n${KI_RT}\n${THREE_RT}\n${MULTI_RT}\n${SHADER_RT}\n`;
+      const hasAnim = /^funktion zeichne\(\)\s*:/m.test(code);
+      const has3D = /szene_3d|würfel_3d|kugel_3d|zylinder_3d|ebene_3d/.test(code);
+      const hasCam = /kamera_starten/.test(code);
+      const hasShader = /\bshader\s*\(/.test(code);
+      const hasMP = /mehrspieler_/.test(code);
+      if (hasCam) startCamera();
+      if (hasMP) startMPPoll();
+      if (hasAnim) {
+        const scopedCode = `${allRT}
 let rahmen=0,maus_x=0,maus_y=0,maus_gedrückt=false;
 ${js}
 return{zeichne:typeof zeichne==='function'?zeichne:null,
@@ -1011,76 +1393,178 @@ return{zeichne:typeof zeichne==='function'?zeichne:null,
   get3D(){const r={cmds:[...__d3],cam:{...__3d_cam},rot:{...__3d_rot},bg:__3d_bg,mode:__3d_mode};__d3.length=0;return r},
   getShader(){return{mode:__shader_mode,code:__shader_code,uniforms:{...__shader_uniforms}}},
   getTurtle(){return __turtle}};`;
-        const scopedFn=new Function("__out","__err","__d","__d3","__audioCtx","__keys","__cam","__storage",scopedCode);
-        const scope={out:[],err:[],d:[],d3:[]};
-        const ctx=scopedFn(scope.out,scope.err,scope.d,scope.d3,audioRef.current,keysRef.current,camCtrl,storageAPI);
-        if(ctx.zeichne){
-          setIsAnim(true);if(has3D)setIs3D(true);if(hasShader)setIsShader(true);let frame=0;
-          const animate=()=>{
-            scope.out.length=0;
+        const scopedFn = new Function("__out", "__err", "__d", "__d3", "__audioCtx", "__keys", "__cam", "__storage", scopedCode);
+        const scope = {
+          out: [],
+          err: [],
+          d: [],
+          d3: []
+        };
+        const ctx = scopedFn(scope.out, scope.err, scope.d, scope.d3, audioRef.current, keysRef.current, camCtrl, storageAPI);
+        if (ctx.zeichne) {
+          setIsAnim(true);
+          if (has3D) setIs3D(true);
+          if (hasShader) setIsShader(true);
+          let frame = 0;
+          const animate = () => {
+            scope.out.length = 0;
             processCamera();
-            ctx.setMouse(mouseRef.current.x,mouseRef.current.y,mouseRef.current.down);
+            ctx.setMouse(mouseRef.current.x, mouseRef.current.y, mouseRef.current.down);
             ctx.setFrame(frame);
-            ctx.setCam(camRef.current.x,camRef.current.y,camRef.current.motion);
+            ctx.setCam(camRef.current.x, camRef.current.y, camRef.current.motion);
             ctx.setMP(mpDataRef.current);
-            try{ctx.zeichne();}catch(e){setConsoleOut([{ty:"err",t:"⚠ "+tErr(e.message)}]);stopAnim();return;}
-            const info3d=ctx.get3D();
-            const shInfo=ctx.getShader();
-            const draws2d=ctx.getDraws(); // Always consume to prevent memory leak
-            if(shInfo.mode){renderShader(shInfo.code,frame/60);}
-            else if(info3d.mode){render3D(info3d.cmds,info3d.cam,info3d.rot);}
-            else{renderCanvas(draws2d,ctx.getTurtle());}
-            frame++;animRef.current=requestAnimationFrame(animate);
+            try {
+              ctx.zeichne();
+            } catch (e) {
+              setConsoleOut([{
+                ty: "err",
+                t: "⚠ " + tErr(e.message)
+              }]);
+              stopAnim();
+              return;
+            }
+            const info3d = ctx.get3D();
+            const shInfo = ctx.getShader();
+            const draws2d = ctx.getDraws(); // Always consume to prevent memory leak
+            if (shInfo.mode) {
+              renderShader(shInfo.code, frame / 60);
+            } else if (info3d.mode) {
+              render3D(info3d.cmds, info3d.cam, info3d.rot);
+            } else {
+              renderCanvas(draws2d, ctx.getTurtle());
+            }
+            frame++;
+            animRef.current = requestAnimationFrame(animate);
           };
-          animRef.current=requestAnimationFrame(animate);
-          const features=[];if(has3D)features.push("3D");if(hasCam)features.push("Kamera");if(hasMP)features.push("Multi");if(hasShader)features.push("Shader");
-          setConsoleOut([{ty:"sys",t:`🔄 Animation läuft... ${features.length?`[${features.join("+")}]`:""} (${code.split("\n").length} Zeilen)`}]);
+          animRef.current = requestAnimationFrame(animate);
+          const features = [];
+          if (has3D) features.push("3D");
+          if (hasCam) features.push("Kamera");
+          if (hasMP) features.push("Multi");
+          if (hasShader) features.push("Shader");
+          setConsoleOut([{
+            ty: "sys",
+            t: `🔄 Animation läuft... ${features.length ? `[${features.join("+")}]` : ""} (${code.split("\n").length} Zeilen)`
+          }]);
         }
-      }else{
-        const fullCode=`${allRT}\nconst __d3=[];\n${js}\nreturn{turtle:__turtle,d3:__d3,mode3d:__3d_mode,cam3d:__3d_cam,rot3d:__3d_rot,bg3d:__3d_bg,shader_mode:__shader_mode,shader_code:__shader_code};`;
-        const fn=new Function("__out","__err","__d","__audioCtx","__keys","__cam","__storage","rahmen","maus_x","maus_y","maus_gedrückt",fullCode);
-        const result=fn(output,errors,draws,audioRef.current,keysRef.current,camCtrl,storageAPI,0,mouseRef.current.x,mouseRef.current.y,mouseRef.current.down);
-
-        if(result.shader_mode){setIsShader(true);renderShader(result.shader_code,0);}
-        else if(result.mode3d){setIs3D(true);render3D(result.d3,result.cam3d,result.rot3d);}
-        else{renderCanvas(draws,result.turtle);}
-
-        const lines=output.map(o=>({ty:"out",t:String(o)}));
-        errors.forEach(e=>lines.push({ty:"err",t:"⚠ "+tErr(e)}));
-        if(!lines.length)lines.push({ty:"sys",t:"✓ "+(result.shader_mode?"Shader aktiv":result.mode3d?result.d3.length+" 3D-Objekte":draws.length+" Zeichenbefehle")});
+      } else {
+        const fullCode = `${allRT}\nconst __d3=[];\n${js}\nreturn{turtle:__turtle,d3:__d3,mode3d:__3d_mode,cam3d:__3d_cam,rot3d:__3d_rot,bg3d:__3d_bg,shader_mode:__shader_mode,shader_code:__shader_code};`;
+        const fn = new Function("__out", "__err", "__d", "__audioCtx", "__keys", "__cam", "__storage", "rahmen", "maus_x", "maus_y", "maus_gedrückt", fullCode);
+        const result = fn(output, errors, draws, audioRef.current, keysRef.current, camCtrl, storageAPI, 0, mouseRef.current.x, mouseRef.current.y, mouseRef.current.down);
+        if (result.shader_mode) {
+          setIsShader(true);
+          renderShader(result.shader_code, 0);
+        } else if (result.mode3d) {
+          setIs3D(true);
+          render3D(result.d3, result.cam3d, result.rot3d);
+        } else {
+          renderCanvas(draws, result.turtle);
+        }
+        const lines = output.map(o => ({
+          ty: "out",
+          t: String(o)
+        }));
+        errors.forEach(e => lines.push({
+          ty: "err",
+          t: "⚠ " + tErr(e)
+        }));
+        if (!lines.length) lines.push({
+          ty: "sys",
+          t: "✓ " + (result.shader_mode ? "Shader aktiv" : result.mode3d ? result.d3.length + " 3D-Objekte" : draws.length + " Zeichenbefehle")
+        });
         setConsoleOut(lines);
-
-        if(showDebug){
-          const vars={};
-          const vm=code.matchAll(/^(\s*)([\wäöüÄÖÜß]+)\s*=\s*(.+)$/gm);
-          for(const m of vm){if(!["funktion","für","wenn","solange","sonst","klasse"].includes(m[2]))vars[m[2]]=m[3].trim();}
+        if (showDebug) {
+          const vars = {};
+          const vm = code.matchAll(/^(\s*)([\wäöüÄÖÜß]+)\s*=\s*(.+)$/gm);
+          for (const m of vm) {
+            if (!["funktion", "für", "wenn", "solange", "sonst", "klasse"].includes(m[2])) vars[m[2]] = m[3].trim();
+          }
           setDebugVars(vars);
         }
       }
-    }catch(e){setConsoleOut([{ty:"err",t:"⚠ "+tErr(e.message)}]);renderCanvas([],null);}
-  },[code,stopAnim,renderCanvas,render3D,renderShader,showDebug,startCamera,processCamera,startMPPoll]);
+    } catch (e) {
+      setConsoleOut([{
+        ty: "err",
+        t: "⚠ " + tErr(e.message)
+      }]);
+      renderCanvas([], null);
+    }
+  }, [code, stopAnim, renderCanvas, render3D, renderShader, showDebug, startCamera, processCamera, startMPPoll]);
 
   // Auto-run
-  useEffect(()=>{
-    if(/^funktion zeichne\(\)\s*:/m.test(code)){setConsoleOut([{ty:"sys",t:"🔄 Animation erkannt — drücke ▶ Ausführen"}]);return;}
-    stopAnim();runCode();
-  },[code]);
-  useEffect(()=>{if(consoleRef.current)consoleRef.current.scrollTop=consoleRef.current.scrollHeight;},[consoleOut]);
-  useEffect(()=>{const h=e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();runCode()}};
-    window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h);},[runCode]);
+  useEffect(() => {
+    if (/^funktion zeichne\(\)\s*:/m.test(code)) {
+      setConsoleOut([{
+        ty: "sys",
+        t: "🔄 Animation erkannt — drücke ▶ Ausführen"
+      }]);
+      return;
+    }
+    stopAnim();
+    runCode();
+  }, [code]);
+  useEffect(() => {
+    if (consoleRef.current) consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
+  }, [consoleOut]);
+  useEffect(() => {
+    const h = e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        runCode();
+      }
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [runCode]);
 
   // ── VOICE ──────────────────────────────────────────────────────────
-  const startVoice=async()=>{setTranscript("");setInterim("");try{recRef.current?.start();setListening(true);}catch(e){}
-    try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});const actx=new(window.AudioContext||window.webkitAudioContext)();
-      const src=actx.createMediaStreamSource(stream);const an=actx.createAnalyser();an.fftSize=256;src.connect(an);
-      const cv=waveRef.current;if(!cv)return;const ctx=cv.getContext("2d");const W=cv.width,H=cv.height;const buf=new Uint8Array(an.frequencyBinCount);
-      const draw=()=>{waveAnimRef.current=requestAnimationFrame(draw);an.getByteFrequencyData(buf);ctx.clearRect(0,0,W,H);
-        for(let i=0;i<64;i++){const v=buf[i]/255;const h=v*H*.9;ctx.fillStyle=`hsla(${v*30},85%,${50+v*20}%,${.5+v*.5})`;
-          ctx.fillRect(i*(W/64)+1,H-h,W/64-2,h);}};draw();}catch(e){}};
-  const stopVoice=()=>{setListening(false);try{recRef.current?.stop();}catch(e){}if(waveAnimRef.current)cancelAnimationFrame(waveAnimRef.current);};
+  const startVoice = async () => {
+    setTranscript("");
+    setInterim("");
+    try {
+      recRef.current?.start();
+      setListening(true);
+    } catch (e) {}
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true
+      });
+      const actx = new (window.AudioContext || window.webkitAudioContext)();
+      const src = actx.createMediaStreamSource(stream);
+      const an = actx.createAnalyser();
+      an.fftSize = 256;
+      src.connect(an);
+      const cv = waveRef.current;
+      if (!cv) return;
+      const ctx = cv.getContext("2d");
+      const W = cv.width,
+        H = cv.height;
+      const buf = new Uint8Array(an.frequencyBinCount);
+      const draw = () => {
+        waveAnimRef.current = requestAnimationFrame(draw);
+        an.getByteFrequencyData(buf);
+        ctx.clearRect(0, 0, W, H);
+        for (let i = 0; i < 64; i++) {
+          const v = buf[i] / 255;
+          const h = v * H * .9;
+          ctx.fillStyle = `hsla(${v * 30},85%,${50 + v * 20}%,${.5 + v * .5})`;
+          ctx.fillRect(i * (W / 64) + 1, H - h, W / 64 - 2, h);
+        }
+      };
+      draw();
+    } catch (e) {}
+  };
+  const stopVoice = () => {
+    setListening(false);
+    try {
+      recRef.current?.stop();
+    } catch (e) {}
+    if (waveAnimRef.current) cancelAnimationFrame(waveAnimRef.current);
+  };
 
   // ── AI (Smart Demos + optional Live API) ─────────────────────────
-  const AI_DEMOS={"3D-Stadt mit Kugeln":`funktion zeichne():
+  const AI_DEMOS = {
+    "3D-Stadt mit Kugeln": `funktion zeichne():
     szene_3d("#0a0a1e")
     licht_3d(5, 8, 5)
     ebene_3d(0, -1, 0, 30, 30, "#1a1a2e")
@@ -1095,7 +1579,7 @@ return{zeichne:typeof zeichne==='function'?zeichne:null,
         kugel_3d(kosinus(winkel) * 6, 2 + sinus(rahmen * 0.04 + k) * 1.5, sinus(winkel) * 6, 0.6, "hsl(" + zeichenkette(k * 45 + rahmen) + ",80%,65%)")
     
     drehen_3d(0, 0.3, 0)`,
-"Physik Bälle Demo":`schwerkraft(0.5)
+    "Physik Bälle Demo": `schwerkraft(0.5)
 boden = körper(0, 380, 400, 20, {"fest": wahr, "farbe": "#1a1a2e"})
 körper(0, 200, 10, 200, {"fest": wahr, "farbe": "#2a1a3e", "winkel": 0.3})
 körper(390, 200, 10, 200, {"fest": wahr, "farbe": "#2a1a3e", "winkel": -0.3})
@@ -1110,7 +1594,7 @@ funktion zeichne():
     
     wenn maus_gedrückt:
         körper(maus_x, maus_y, 15, 15, {"farbe": "hsl(" + zeichenkette(rahmen * 3) + ",90%,65%)"})`,
-"Partikel-Feuerwerk":`funktion zeichne():
+    "Partikel-Feuerwerk": `funktion zeichne():
     fülle("rgba(5,5,10,0.15)")
     
     wenn rahmen % 30 == 0:
@@ -1129,7 +1613,7 @@ funktion zeichne():
     
     wenn maus_gedrückt:
         partikel_explosion(maus_x, maus_y, "#facc15", 30)`,
-"Pong-Spiel":`schläger_y = 180
+    "Pong-Spiel": `schläger_y = 180
 ball_x = 200
 ball_y = 200
 ball_vx = 3
@@ -1174,7 +1658,7 @@ funktion zeichne():
     
     farbe("#ffffff")
     text("Punkte: " + zeichenkette(punkte), 170, 30)`,
-"Kamera-Steuerung":`x = 200
+    "Kamera-Steuerung": `x = 200
 y = 200
 geschwindigkeit = 4
 größe = 20
@@ -1206,7 +1690,7 @@ funktion zeichne():
     
     farbe("#ffffff50")
     text("← → ↑ ↓ Pfeiltasten", 120, 390)`,
-"KI die Farben lernt":`ki = ki_erstellen()
+    "KI die Farben lernt": `ki = ki_erstellen()
 
 ki_lernen(ki, "Warm", [255, 100, 50])
 ki_lernen(ki, "Warm", [200, 80, 30])
@@ -1227,7 +1711,7 @@ für f in farben:
 
 drucke("")
 drucke("Genauigkeit: " + zeichenkette(ki_genauigkeit(ki)) + "%")`,
-"Mehrspieler Cursor-Jagd":`x = 200
+    "Mehrspieler Cursor-Jagd": `x = 200
 y = 200
 
 funktion zeichne():
@@ -1257,26 +1741,26 @@ funktion zeichne():
             partikel_explosion(x, y, "#facc15", 30)
     
     partikel_aktualisieren()`,
-"Plasma-Shader":`shader(\`
-precision mediump float;
-uniform float u_time;
-uniform vec2 u_resolution;
-void main(){
-    vec2 uv = gl_FragCoord.xy / u_resolution;
-    float t = u_time * 0.4;
-    float v = 0.0;
-    v += sin(uv.x * 10.0 + t);
-    v += sin((uv.y * 10.0 + t) * 0.5);
-    v += sin((uv.x * 10.0 + uv.y * 10.0 + t) * 0.3);
-    v += sin(length(uv - 0.5) * 15.0 - t * 2.0);
-    vec3 col = vec3(
-        sin(v * 3.14159 + 0.0) * 0.5 + 0.5,
-        sin(v * 3.14159 + 2.094) * 0.5 + 0.5,
-        sin(v * 3.14159 + 4.189) * 0.5 + 0.5
-    );
-    gl_FragColor = vec4(col * 0.9, 1.0);
-}\`)`,
-"Schildkröte Mandala":`schildkröte.geschwindigkeit(0)
+    "Plasma-Shader": `shader(
+"precision mediump float;" +
+"uniform float u_time;" +
+"uniform vec2 u_resolution;" +
+"void main(){" +
+"  vec2 uv = gl_FragCoord.xy / u_resolution;" +
+"  float t = u_time * 0.4;" +
+"  float v = 0.0;" +
+"  v += sin(uv.x * 10.0 + t);" +
+"  v += sin((uv.y * 10.0 + t) * 0.5);" +
+"  v += sin((uv.x * 10.0 + uv.y * 10.0 + t) * 0.3);" +
+"  v += sin(length(uv - 0.5) * 15.0 - t * 2.0);" +
+"  vec3 col = vec3(" +
+"    sin(v * 3.14159 + 0.0) * 0.5 + 0.5," +
+"    sin(v * 3.14159 + 2.094) * 0.5 + 0.5," +
+"    sin(v * 3.14159 + 4.189) * 0.5 + 0.5" +
+"  );" +
+"  gl_FragColor = vec4(col * 0.9, 1.0);" +
+"}")`,
+    "Schildkröte Mandala": `schildkröte.geschwindigkeit(0)
 farben = ["#f43f5e", "#38bdf8", "#facc15", "#2dd4bf", "#a78bfa", "#fb923c"]
 
 für ring in bereich(0, 6):
@@ -1287,7 +1771,7 @@ für ring in bereich(0, 6):
         schildkröte.vorwärts(5 + ring * 10)
         schildkröte.links(70)
         schildkröte.rechts(10)`,
-"Planetensystem":`funktion zeichne():
+    "Planetensystem": `funktion zeichne():
     szene_3d("#050510")
     licht_3d(0, 3, 0)
     
@@ -1305,36 +1789,92 @@ für ring in bereich(0, 6):
             mw = rahmen * 0.05 + m * 3.14
             kugel_3d(px + kosinus(mw) * 1.2, 0.3, pz + sinus(mw) * 1.2, 0.15, "#ffffff80")
     
-    drehen_3d(0.3, 0.2, 0)`};
-  const sendToAI=async(prompt)=>{if(!prompt.trim()||aiLoading)return;setAiLoading(true);setAiInput("");
-    const key=Object.keys(AI_DEMOS).find(k=>prompt.toLowerCase().includes(k.toLowerCase())||k.toLowerCase().includes(prompt.toLowerCase()));
-    if(key){const demo=AI_DEMOS[key];let i=0;const iv=setInterval(()=>{i+=Math.floor(Math.random()*8)+5;if(i>=demo.length){clearInterval(iv);setCode(demo);setTimeout(()=>setShowAI(false),300);setAiLoading(false);}else{setCode(demo.slice(0,i)+"█");}},25);return;}
-    setCode("# KI-Demo: "+prompt+"\n# Wähle eines der vorgeschlagenen Beispiele\n# oder beschreibe es genauer!");setShowAI(false);setAiLoading(false);};
-
-  const askTutor=async(q)=>{if(!q.trim()||tutorLoading)return;setTutorLoading(true);setTutorQ("");
-    const hints={"was":"Dieser Code nutzt Black Swan — die deutsche Programmiersprache. Jeder Befehl ist auf Deutsch und wird zu Python transpiliert!",
-      "wie":"Der Code wird zuerst von Deutsch nach JavaScript übersetzt (Compiler), dann ausgeführt. Du kannst auch den Python-Code sehen (🐍 Button)!",
-      "fehler":"Prüfe ob alle Befehle richtig geschrieben sind. Tipp: Klick auf ein Galerie-Beispiel und studiere den Code!",
-      "hilf":"Versuch die Galerie-Beispiele links anzuklicken. Jedes zeigt eine andere Funktion von Black Swan. Du kannst den Code ändern und experimentieren!"};
-    const a=Object.entries(hints).find(([k])=>q.toLowerCase().includes(k));
-    setTimeout(()=>{setTutorA(a?a[1]:"Black Swan ist eine deutsche Programmiersprache. Probier die Beispiele links aus — du kannst den Code ändern und auf ▶ Ausführen klicken!");setTutorLoading(false);},800);};
-
-  const sidePanel=showPy?"py":showDebug?"debug":showTutor?"tutor":null;
-  const togglePanel=p=>{setShowPy(p==="py"?!showPy:false);setShowDebug(p==="debug"?!showDebug:false);setShowTutor(p==="tutor"?!showTutor:false);};
-  const modeLabel=isShader?"🌐 SHADER":is3D?"🧊 3D":(/taste\(/.test(code)&&isAnim)?"🎮 GAME":camActive?"🖐️ CAM":(/mehrspieler_/.test(code)&&isAnim)?"👥 MULTI":isAnim?"🔄 LIVE":"● Bereit";
+    drehen_3d(0.3, 0.2, 0)`
+  };
+  const sendToAI = async prompt => {
+    if (!prompt.trim() || aiLoading) return;
+    setAiLoading(true);
+    setAiInput("");
+    const key = Object.keys(AI_DEMOS).find(k => prompt.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(prompt.toLowerCase()));
+    if (key) {
+      const demo = AI_DEMOS[key];
+      let i = 0;
+      const iv = setInterval(() => {
+        i += Math.floor(Math.random() * 8) + 5;
+        if (i >= demo.length) {
+          clearInterval(iv);
+          setCode(demo);
+          setTimeout(() => setShowAI(false), 300);
+          setAiLoading(false);
+        } else {
+          setCode(demo.slice(0, i) + "█");
+        }
+      }, 25);
+      return;
+    }
+    setCode("# KI-Demo: " + prompt + "\n# Wähle eines der vorgeschlagenen Beispiele\n# oder beschreibe es genauer!");
+    setShowAI(false);
+    setAiLoading(false);
+  };
+  const askTutor = async q => {
+    if (!q.trim() || tutorLoading) return;
+    setTutorLoading(true);
+    setTutorQ("");
+    const hints = {
+      "was": "Dieser Code nutzt Black Swan — die deutsche Programmiersprache. Jeder Befehl ist auf Deutsch und wird zu Python transpiliert!",
+      "wie": "Der Code wird zuerst von Deutsch nach JavaScript übersetzt (Compiler), dann ausgeführt. Du kannst auch den Python-Code sehen (🐍 Button)!",
+      "fehler": "Prüfe ob alle Befehle richtig geschrieben sind. Tipp: Klick auf ein Galerie-Beispiel und studiere den Code!",
+      "hilf": "Versuch die Galerie-Beispiele links anzuklicken. Jedes zeigt eine andere Funktion von Black Swan. Du kannst den Code ändern und experimentieren!"
+    };
+    const a = Object.entries(hints).find(([k]) => q.toLowerCase().includes(k));
+    setTimeout(() => {
+      setTutorA(a ? a[1] : "Black Swan ist eine deutsche Programmiersprache. Probier die Beispiele links aus — du kannst den Code ändern und auf ▶ Ausführen klicken!");
+      setTutorLoading(false);
+    }, 800);
+  };
+  const sidePanel = showPy ? "py" : showDebug ? "debug" : showTutor ? "tutor" : null;
+  const togglePanel = p => {
+    setShowPy(p === "py" ? !showPy : false);
+    setShowDebug(p === "debug" ? !showDebug : false);
+    setShowTutor(p === "tutor" ? !showTutor : false);
+  };
+  const modeLabel = isShader ? "🌐 SHADER" : is3D ? "🧊 3D" : /taste\(/.test(code) && isAnim ? "🎮 GAME" : camActive ? "🖐️ CAM" : /mehrspieler_/.test(code) && isAnim ? "👥 MULTI" : isAnim ? "🔄 LIVE" : "● Bereit";
 
   // ══════════════════════════════════════════════════════════════════
-  const Btn=({onClick,active,color,children,title})=>(
-    <button onClick={onClick} title={title} style={{padding:"4px 10px",borderRadius:14,
-      border:`1px solid ${color||C.DM}${active?"60":"22"}`,
-      background:active?`${color||C.DM}15`:"transparent",
-      color:color||C.DM,cursor:"pointer",fontFamily:"'Outfit'",
-      fontSize:10,fontWeight:600,whiteSpace:"nowrap",transition:"all .15s"}}>{children}</button>);
-
-  return(
-    <div style={{height:"100vh",display:"flex",flexDirection:"column",background:C.BG,
-      color:C.TX,fontFamily:"'Fira Code',monospace",overflow:"hidden"}}>
-      <style>{`
+  const Btn = ({
+    onClick,
+    active,
+    color,
+    children,
+    title
+  }) => /*#__PURE__*/React.createElement("button", {
+    onClick: onClick,
+    title: title,
+    style: {
+      padding: "4px 10px",
+      borderRadius: 14,
+      border: `1px solid ${color || C.DM}${active ? "60" : "22"}`,
+      background: active ? `${color || C.DM}15` : "transparent",
+      color: color || C.DM,
+      cursor: "pointer",
+      fontFamily: "'Outfit'",
+      fontSize: 10,
+      fontWeight: 600,
+      whiteSpace: "nowrap",
+      transition: "all .15s"
+    }
+  }, children);
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      background: C.BG,
+      color: C.TX,
+      fontFamily: "'Fira Code',monospace",
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("style", null, `
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Fira+Code:wght@400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:${C.BD};border-radius:3px}
@@ -1346,237 +1886,851 @@ textarea:focus,input:focus{outline:none}::selection{background:${C.R}30}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
 @keyframes glow3d{0%,100%{box-shadow:0 0 15px ${C.B}15}50%{box-shadow:0 0 30px ${C.B}25}}
 @keyframes glowShader{0%,100%{box-shadow:0 0 15px ${C.P}15}50%{box-shadow:0 0 30px ${C.P}25}}
-      `}</style>
-
-      {/* HEADER */}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
-        padding:"0 12px",height:40,flexShrink:0,borderBottom:`1px solid ${C.BD}40`,
-        background:`linear-gradient(180deg,${C.S2}ee,${C.BG})`}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{fontFamily:"'Outfit'",fontWeight:900,fontSize:14,display:"flex",alignItems:"center",gap:5}}>
-            <span style={{fontSize:16}}>🦢</span>
-            <span style={{background:`linear-gradient(135deg,${C.R},${C.O})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>BLACK SWAN</span>
-          </div>
-          <div style={{fontSize:7,color:C.DM,fontFamily:"'Outfit'",padding:"2px 6px",borderRadius:6,border:`1px solid ${C.DM}25`,letterSpacing:1}}>OMEGA v16</div>
-        </div>
-        <div style={{display:"flex",gap:3,alignItems:"center",flexWrap:"wrap"}}>
-          <button onClick={isAnim?stopAnim:runCode} style={{padding:"4px 12px",borderRadius:14,border:"none",
-            cursor:"pointer",background:isAnim?C.R:`linear-gradient(135deg,${C.T},${C.B})`,
-            color:"#fff",fontFamily:"'Outfit'",fontSize:10,fontWeight:700}}>{isAnim?"⏹ Stopp":"▶ Ausführen"}</button>
-          {voiceOK&&<Btn onClick={()=>{setShowVoice(true);startVoice()}} color={C.O}>🎤</Btn>}
-          <Btn onClick={()=>setShowAI(true)} color={C.P}>🤖 KI</Btn>
-          <div style={{width:1,height:14,background:C.BD+"40",margin:"0 1px"}}/>
-          <Btn onClick={()=>togglePanel("py")} active={showPy} color={C.B}>🐍</Btn>
-          <Btn onClick={()=>togglePanel("debug")} active={showDebug} color={C.Y}>🔄</Btn>
-          <Btn onClick={()=>togglePanel("tutor")} active={showTutor} color={C.T}>🧠</Btn>
-          <Btn onClick={()=>{const cv=isShader?shaderRef.current:is3D?canvas3DRef.current:canvasRef.current;
-            if(!cv)return;const a=document.createElement("a");a.download="black-swan.png";a.href=cv.toDataURL();a.click();}} color={C.DM} title="Canvas speichern">💾</Btn>
-        </div>
-      </div>
-
-      {/* MAIN */}
-      <div style={{flex:1,display:"flex",overflow:"hidden"}}>
-        {/* Gallery */}
-        <div style={{width:46,background:C.S1,borderRight:`1px solid ${C.BD}30`,
-          display:"flex",flexDirection:"column",alignItems:"center",padding:"4px 0",gap:2,overflowY:"auto",flexShrink:0}}>
-          {GALLERY.map((g,i)=>(
-            <button key={i} onClick={()=>{setActiveG(i);stopAnim();setCode(g.c)}} title={g.t+" — "+g.d}
-              style={{width:34,height:34,borderRadius:6,fontSize:13,
-                border:`1px solid ${activeG===i?C.R+"50":C.BD+"20"}`,
-                background:activeG===i?C.R+"15":"transparent",cursor:"pointer",
-                display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>{g.t.split(" ")[0]}</button>
-          ))}
-        </div>
-
-        {/* Editor */}
-        <div style={{width:sidePanel?280:360,display:"flex",flexDirection:"column",
-          borderRight:`1px solid ${C.BD}30`,flexShrink:0,transition:"width .2s",minWidth:220}}>
-          <div style={{flex:1,position:"relative",overflow:"hidden"}}>
-            <pre style={{position:"absolute",inset:0,margin:0,padding:"8px 10px",fontSize:11,
-              lineHeight:1.7,fontFamily:"inherit",overflow:"auto",pointerEvents:"none",
-              whiteSpace:"pre-wrap",wordBreak:"break-all",background:"transparent",zIndex:1}}
-              dangerouslySetInnerHTML={{__html:hlDE(code)}} />
-            <textarea value={code} onChange={e=>{stopAnim();setCode(e.target.value)}}
-              spellCheck={false} style={{position:"absolute",inset:0,width:"100%",height:"100%",
-                padding:"8px 10px",fontSize:11,lineHeight:1.7,fontFamily:"inherit",
-                background:C.BG,color:"transparent",caretColor:C.R,border:"none",
-                resize:"none",whiteSpace:"pre-wrap",wordBreak:"break-all",zIndex:2}} />
-          </div>
-          <div style={{height:75,borderTop:`1px solid ${C.BD}30`,flexShrink:0}}>
-            <div ref={consoleRef} style={{height:"100%",overflow:"auto",padding:"5px 10px",
-              background:`${C.S1}80`,fontSize:9,lineHeight:1.5}}>
-              {consoleOut.map((l,i)=>(
-                <div key={i} style={{color:l.ty==="err"?C.R:l.ty==="sys"?C.DM:C.T,
-                  animation:`fadeUp .1s ease ${i*.01}s both`}}>{l.t}</div>))}
-            </div>
-          </div>
-        </div>
-
-        {/* SIDE PANEL */}
-        {sidePanel&&(
-          <div style={{width:220,borderRight:`1px solid ${C.BD}30`,flexShrink:0,
-            animation:"fadeIn .15s ease",display:"flex",flexDirection:"column",overflow:"hidden"}}>
-            {showPy&&(<>
-              <div style={{padding:"4px 10px",fontSize:7,letterSpacing:2,color:C.B,fontFamily:"'Outfit'",fontWeight:700,borderBottom:`1px solid ${C.BD}30`}}>🐍 PYTHON</div>
-              <pre style={{flex:1,margin:0,padding:"8px 10px",fontSize:10,lineHeight:1.7,fontFamily:"inherit",overflow:"auto",whiteSpace:"pre-wrap",background:C.BG,color:C.DM}}>{deToEn(code)}</pre>
-            </>)}
-            {showDebug&&(<>
-              <div style={{padding:"4px 10px",fontSize:7,letterSpacing:2,color:C.Y,fontFamily:"'Outfit'",fontWeight:700,borderBottom:`1px solid ${C.BD}30`}}>🔄 VARIABLEN</div>
-              <div style={{flex:1,overflow:"auto",padding:"6px 8px",fontSize:9.5}}>
-                {Object.keys(debugVars).length===0?
-                  <div style={{color:C.DM,fontFamily:"'Outfit'",fontSize:10,padding:6}}>Führe Code aus um Variablen zu sehen.</div>:
-                  Object.entries(debugVars).map(([k,v],i)=>(
-                    <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"3px 5px",borderRadius:4,marginBottom:1,background:i%2===0?C.S1+"80":"transparent"}}>
-                      <span style={{color:C.Y}}>{k}</span><span style={{color:C.T,maxWidth:100,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v}</span>
-                    </div>))}
-                <div style={{marginTop:10,padding:"5px 7px",borderRadius:5,background:C.S1,border:`1px solid ${C.BD}30`,fontSize:8,color:C.DM}}>
-                  <div style={{fontFamily:"'Outfit'",fontWeight:600,marginBottom:3}}>v16 OMEGA APIs:</div>
-                  <div>👥 mehrspieler_senden/lesen</div>
-                  <div>🌐 shader · shader_wert</div>
-                  <div>🧊 szene_3d · würfel_3d · kugel_3d</div>
-                  <div>🖐️ kamera_starten · kamera_x/y</div>
-                  <div>🧠 ki_erstellen · ki_lernen</div>
-                  <div>⚛️ schwerkraft · körper · kraft</div>
-                  <div>🎭 partikel_explosion</div>
-                  <div>🎮 taste · spielobjekt · bewege</div>
-                </div>
-              </div>
-            </>)}
-            {showTutor&&(<>
-              <div style={{padding:"4px 10px",fontSize:7,letterSpacing:2,color:C.T,fontFamily:"'Outfit'",fontWeight:700,borderBottom:`1px solid ${C.BD}30`}}>🧠 KI-TUTOR</div>
-              <div style={{flex:1,overflow:"auto",padding:"6px 8px",display:"flex",flexDirection:"column",gap:6}}>
-                <div style={{display:"flex",flexWrap:"wrap",gap:2}}>
-                  {["Was macht das?","Verbesserungen?","Zeile für Zeile","Fehler?"].map(q=>(
-                    <button key={q} onClick={()=>askTutor(q)} style={{padding:"2px 7px",borderRadius:5,border:`1px solid ${C.BD}`,background:C.S1,color:C.TX,cursor:"pointer",fontSize:8,fontFamily:"'Outfit'"}}>{q}</button>))}
-                </div>
-                <div style={{display:"flex",gap:3}}>
-                  <input value={tutorQ} onChange={e=>setTutorQ(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")askTutor(tutorQ)}}
-                    placeholder="Frage..." style={{flex:1,padding:"5px 7px",borderRadius:5,border:`1px solid ${C.BD}`,background:C.S1,color:C.TX,fontSize:9.5,fontFamily:"'Outfit'"}} />
-                  <button onClick={()=>askTutor(tutorQ)} style={{padding:"5px 8px",borderRadius:5,border:"none",cursor:"pointer",background:C.T,color:"#000",fontSize:9,fontWeight:700}}>
-                    {tutorLoading?"⏳":"→"}</button>
-                </div>
-                {tutorA&&<div style={{padding:"7px 8px",borderRadius:5,background:C.S1,border:`1px solid ${C.T}20`,fontSize:10,lineHeight:1.6,fontFamily:"'Outfit'",color:C.TX,animation:"fadeUp .2s ease"}}>{tutorA}</div>}
-                {!tutorA&&!tutorLoading&&<div style={{color:C.DM,fontFamily:"'Outfit'",fontSize:9.5,padding:4}}>Frage den KI-Tutor! 🇩🇪</div>}
-              </div>
-            </>)}
-          </div>
-        )}
-
-        {/* CANVAS AREA */}
-        <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",
-          background:`radial-gradient(ellipse at center,${C.S2},${C.BG})`,position:"relative"}}>
-          <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 1px 1px, ${C.BD}15 1px, transparent 0)`,backgroundSize:"40px 40px"}} />
-          {/* Canvas wrapper — contains all canvases + mouse overlay */}
-          <div style={{position:"relative",width:400,height:400,maxWidth:"100%",maxHeight:"calc(100vh - 80px)",zIndex:1}}>
-            {/* 2D Canvas */}
-            <canvas ref={canvasRef} width={400} height={400} style={{
-              borderRadius:8,border:`1px solid ${C.BD}40`,width:"100%",height:"100%",
-              boxShadow:`0 0 40px ${C.R}04`,
-              display:(is3D||isShader)?"none":"block"}} />
-            {/* 3D Canvas */}
-            <canvas ref={canvas3DRef} width={400} height={400} style={{
-              borderRadius:8,border:`1px solid ${C.B}40`,width:"100%",height:"100%",
-              boxShadow:`0 0 40px ${C.B}08`,
-              display:is3D&&!isShader?"block":"none",
-              animation:is3D?"glow3d 3s ease infinite":"none"}} />
-            {/* Shader Canvas (WebGL) */}
-            <canvas ref={shaderRef} width={400} height={400} style={{
-              borderRadius:8,border:`1px solid ${C.P}40`,width:"100%",height:"100%",
-              boxShadow:`0 0 40px ${C.P}08`,
-              display:isShader?"block":"none",
-              animation:isShader?"glowShader 3s ease infinite":"none"}} />
-            {/* Mouse/Touch overlay — captures events for ALL canvas modes */}
-            <div ref={mouseOverlayRef} style={{position:"absolute",inset:0,zIndex:3,cursor:"crosshair",borderRadius:8}} />
-          </div>
-          {/* Mode badge */}
-          {isAnim&&<div style={{position:"absolute",top:8,right:12,
-            padding:"3px 10px",borderRadius:10,
-            background:isShader?`${C.P}20`:is3D?`${C.B}20`:`${C.R}20`,
-            border:`1px solid ${isShader?C.P:is3D?C.B:C.R}25`,fontSize:8,
-            color:isShader?C.P:is3D?C.B:C.R,fontFamily:"'Outfit'",fontWeight:700,zIndex:2,
-            animation:"breathe 2s ease infinite",letterSpacing:1}}>{modeLabel}</div>}
-          {/* Cam indicator */}
-          {camActive&&<div style={{position:"absolute",top:8,left:12,
-            padding:"3px 8px",borderRadius:8,background:`${C.O}20`,border:`1px solid ${C.O}25`,
-            fontSize:8,color:C.O,fontFamily:"'Outfit'",fontWeight:700,zIndex:2,
-            animation:"pulse 1.5s infinite"}}>📷 Kamera aktiv</div>}
-          {/* Game hint */}
-          {isAnim&&/taste\(/.test(code)&&!is3D&&(
-            <div style={{position:"absolute",bottom:8,right:12,padding:"3px 8px",borderRadius:8,
-              background:`${C.S1}cc`,border:`1px solid ${C.BD}40`,fontSize:7,color:C.DM,fontFamily:"'Outfit'",zIndex:2}}>⌨️ Pfeiltasten</div>)}
-        </div>
-      </div>
-
-      {/* VOICE OVERLAY */}
-      {showVoice&&(
-        <div style={{position:"absolute",inset:0,background:`${C.BG}f5`,backdropFilter:"blur(20px)",zIndex:100,
-          display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:14,animation:"fadeIn .2s ease"}}>
-          <button onClick={()=>{stopVoice();setShowVoice(false)}} style={{position:"absolute",top:12,right:12,width:28,height:28,borderRadius:"50%",border:`1px solid ${C.BD}`,background:C.S1,color:C.DM,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
-          <div style={{fontFamily:"'Outfit'",fontSize:22,fontWeight:900,background:`linear-gradient(135deg,${C.R},${C.O})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{listening?"Ich höre zu...":"Sprechen"}</div>
-          <canvas ref={waveRef} width={400} height={60} style={{borderRadius:8,border:`1px solid ${C.R}15`}} />
-          {(transcript||interim)&&(
-            <div style={{maxWidth:440,width:"100%",padding:"10px 14px",borderRadius:8,background:`${C.S1}cc`,border:`1px solid ${C.BD}`}}>
-              <div style={{fontSize:12,fontFamily:"'Outfit'",lineHeight:1.5}}>{transcript&&<span>{transcript} </span>}{interim&&<span style={{color:C.DM,fontStyle:"italic"}}>{interim}</span>}</div>
-              <div style={{marginTop:4,fontSize:10,color:C.O,fontFamily:"'Fira Code'"}}>→ {speechToCode(transcript||interim)}</div>
-            </div>)}
-          <div style={{display:"flex",gap:8}}>
-            {listening
-              ?<button onClick={stopVoice} style={{width:52,height:52,borderRadius:"50%",border:"none",cursor:"pointer",background:C.R,color:"#fff",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",animation:"breathe 1.5s ease infinite"}}>⏹</button>
-              :<button onClick={startVoice} style={{width:52,height:52,borderRadius:"50%",border:`2px solid ${C.R}40`,cursor:"pointer",background:C.S1,color:C.R,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>🎤</button>}
-          </div>
-          {transcript&&(
-            <div style={{display:"flex",gap:5}}>
-              <button onClick={()=>{const c=speechToCode(transcript);setCode(p=>p+(p&&!p.endsWith("\n")?"\n":"")+c);stopVoice();setShowVoice(false)}}
-                style={{padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",background:`linear-gradient(135deg,${C.O},${C.R})`,color:"#fff",fontFamily:"'Outfit'",fontSize:10,fontWeight:700}}>✍️ Einfügen</button>
-              <button onClick={()=>{sendToAI(transcript);stopVoice();setShowVoice(false)}}
-                style={{padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",background:`linear-gradient(135deg,${C.P},${C.B})`,color:"#fff",fontFamily:"'Outfit'",fontSize:10,fontWeight:700}}>🤖 An KI</button>
-            </div>)}
-        </div>)}
-
-      {/* AI OVERLAY */}
-      {showAI&&(
-        <div style={{position:"absolute",inset:0,background:`${C.BG}f5`,backdropFilter:"blur(20px)",zIndex:100,
-          display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,animation:"fadeIn .2s ease"}}>
-          <button onClick={()=>setShowAI(false)} style={{position:"absolute",top:12,right:12,width:28,height:28,borderRadius:"50%",border:`1px solid ${C.BD}`,background:C.S1,color:C.DM,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
-          <div style={{fontSize:30}}>🦢</div>
-          <div style={{fontFamily:"'Outfit'",fontSize:18,fontWeight:900,background:`linear-gradient(135deg,${C.P},${C.B})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Was soll ich erschaffen?</div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:3,justifyContent:"center",maxWidth:500}}>
-            {["3D-Stadt mit Kugeln","Physik Bälle Demo","Partikel-Feuerwerk",
-              "Pong-Spiel","Kamera-Steuerung","KI die Farben lernt",
-              "Mehrspieler Cursor-Jagd","Plasma-Shader","Schildkröte Mandala","Planetensystem"].map(s=>(
-              <button key={s} onClick={()=>{setAiInput(s);sendToAI(s)}} style={{padding:"3px 9px",borderRadius:6,border:`1px solid ${C.BD}`,background:C.S1,color:C.TX,cursor:"pointer",fontSize:9.5,fontFamily:"'Outfit'"}}>{s}</button>))}
-          </div>
-          <div style={{display:"flex",gap:4,width:"100%",maxWidth:460}}>
-            <input value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")sendToAI(aiInput)}}
-              placeholder="Beschreibe was du willst..." style={{flex:1,padding:"9px 12px",borderRadius:8,border:`1px solid ${C.BD}`,background:`${C.S1}cc`,color:C.TX,fontSize:11,fontFamily:"'Outfit'"}} />
-            <button onClick={()=>sendToAI(aiInput)} disabled={aiLoading}
-              style={{padding:"9px 16px",borderRadius:8,border:"none",cursor:"pointer",
-                background:aiInput.trim()?`linear-gradient(135deg,${C.P},${C.B})`:C.S1,
-                color:aiInput.trim()?"#fff":C.DM,fontFamily:"'Outfit'",fontSize:11,fontWeight:700}}>
-              {aiLoading?<span style={{animation:"spin .8s linear infinite",display:"inline-block"}}>⏳</span>:"→"}</button>
-          </div>
-        </div>)}
-
-      {/* STATUS */}
-      <div style={{height:18,display:"flex",alignItems:"center",justifyContent:"space-between",
-        padding:"0 12px",borderTop:`1px solid ${C.BD}30`,background:`${C.S1}80`,fontSize:7.5,color:C.DM,flexShrink:0}}>
-        <div style={{display:"flex",gap:6,fontFamily:"'Outfit'"}}>
-          <span style={{fontWeight:700}}>BLACK SWAN OMEGA</span>
-          <span style={{color:isShader?C.P:is3D?C.B:isAnim?C.R:C.T}}>{modeLabel}</span>
-          {camActive&&<span style={{color:C.O}}>📷</span>}
-        </div>
-        <span style={{letterSpacing:0.3}}>👥Multi · 🌐Shader · 🧊3D · 🖐️Körper · 🧠KI · ⚛️Physik · 🎭Partikel · 🎮Game · 🐢Turtle · 🔊Sound · 📱Touch</span>
-      </div>
-    </div>
-  );
+      `), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "0 12px",
+      height: 40,
+      flexShrink: 0,
+      borderBottom: `1px solid ${C.BD}40`,
+      background: `linear-gradient(180deg,${C.S2}ee,${C.BG})`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Outfit'",
+      fontWeight: 900,
+      fontSize: 14,
+      display: "flex",
+      alignItems: "center",
+      gap: 5
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 16
+    }
+  }, "\uD83E\uDDA2"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      background: `linear-gradient(135deg,${C.R},${C.O})`,
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent"
+    }
+  }, "BLACK SWAN")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 7,
+      color: C.DM,
+      fontFamily: "'Outfit'",
+      padding: "2px 6px",
+      borderRadius: 6,
+      border: `1px solid ${C.DM}25`,
+      letterSpacing: 1
+    }
+  }, "OMEGA v16")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 3,
+      alignItems: "center",
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: isAnim ? stopAnim : runCode,
+    style: {
+      padding: "4px 12px",
+      borderRadius: 14,
+      border: "none",
+      cursor: "pointer",
+      background: isAnim ? C.R : `linear-gradient(135deg,${C.T},${C.B})`,
+      color: "#fff",
+      fontFamily: "'Outfit'",
+      fontSize: 10,
+      fontWeight: 700
+    }
+  }, isAnim ? "⏹ Stopp" : "▶ Ausführen"), voiceOK && /*#__PURE__*/React.createElement(Btn, {
+    onClick: () => {
+      setShowVoice(true);
+      startVoice();
+    },
+    color: C.O
+  }, "\uD83C\uDFA4"), /*#__PURE__*/React.createElement(Btn, {
+    onClick: () => setShowAI(true),
+    color: C.P
+  }, "\uD83E\uDD16 KI"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 1,
+      height: 14,
+      background: C.BD + "40",
+      margin: "0 1px"
+    }
+  }), /*#__PURE__*/React.createElement(Btn, {
+    onClick: () => togglePanel("py"),
+    active: showPy,
+    color: C.B
+  }, "\uD83D\uDC0D"), /*#__PURE__*/React.createElement(Btn, {
+    onClick: () => togglePanel("debug"),
+    active: showDebug,
+    color: C.Y
+  }, "\uD83D\uDD04"), /*#__PURE__*/React.createElement(Btn, {
+    onClick: () => togglePanel("tutor"),
+    active: showTutor,
+    color: C.T
+  }, "\uD83E\uDDE0"), /*#__PURE__*/React.createElement(Btn, {
+    onClick: () => {
+      const cv = isShader ? shaderRef.current : is3D ? canvas3DRef.current : canvasRef.current;
+      if (!cv) return;
+      const a = document.createElement("a");
+      a.download = "black-swan.png";
+      a.href = cv.toDataURL();
+      a.click();
+    },
+    color: C.DM,
+    title: "Canvas speichern"
+  }, "\uD83D\uDCBE"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      display: "flex",
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 46,
+      background: C.S1,
+      borderRight: `1px solid ${C.BD}30`,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      padding: "4px 0",
+      gap: 2,
+      overflowY: "auto",
+      flexShrink: 0
+    }
+  }, GALLERY.map((g, i) => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    onClick: () => {
+      setActiveG(i);
+      stopAnim();
+      setCode(g.c);
+    },
+    title: g.t + " — " + g.d,
+    style: {
+      width: 34,
+      height: 34,
+      borderRadius: 6,
+      fontSize: 13,
+      border: `1px solid ${activeG === i ? C.R + "50" : C.BD + "20"}`,
+      background: activeG === i ? C.R + "15" : "transparent",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      transition: "all .15s"
+    }
+  }, g.t.split(" ")[0]))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: sidePanel ? 280 : 360,
+      display: "flex",
+      flexDirection: "column",
+      borderRight: `1px solid ${C.BD}30`,
+      flexShrink: 0,
+      transition: "width .2s",
+      minWidth: 220
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      position: "relative",
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("pre", {
+    style: {
+      position: "absolute",
+      inset: 0,
+      margin: 0,
+      padding: "8px 10px",
+      fontSize: 11,
+      lineHeight: 1.7,
+      fontFamily: "inherit",
+      overflow: "auto",
+      pointerEvents: "none",
+      whiteSpace: "pre-wrap",
+      wordBreak: "break-all",
+      background: "transparent",
+      zIndex: 1
+    },
+    dangerouslySetInnerHTML: {
+      __html: hlDE(code)
+    }
+  }), /*#__PURE__*/React.createElement("textarea", {
+    value: code,
+    onChange: e => {
+      stopAnim();
+      setCode(e.target.value);
+    },
+    spellCheck: false,
+    style: {
+      position: "absolute",
+      inset: 0,
+      width: "100%",
+      height: "100%",
+      padding: "8px 10px",
+      fontSize: 11,
+      lineHeight: 1.7,
+      fontFamily: "inherit",
+      background: C.BG,
+      color: "transparent",
+      caretColor: C.R,
+      border: "none",
+      resize: "none",
+      whiteSpace: "pre-wrap",
+      wordBreak: "break-all",
+      zIndex: 2
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 75,
+      borderTop: `1px solid ${C.BD}30`,
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: consoleRef,
+    style: {
+      height: "100%",
+      overflow: "auto",
+      padding: "5px 10px",
+      background: `${C.S1}80`,
+      fontSize: 9,
+      lineHeight: 1.5
+    }
+  }, consoleOut.map((l, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      color: l.ty === "err" ? C.R : l.ty === "sys" ? C.DM : C.T,
+      animation: `fadeUp .1s ease ${i * .01}s both`
+    }
+  }, l.t))))), sidePanel && /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 220,
+      borderRight: `1px solid ${C.BD}30`,
+      flexShrink: 0,
+      animation: "fadeIn .15s ease",
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden"
+    }
+  }, showPy && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "4px 10px",
+      fontSize: 7,
+      letterSpacing: 2,
+      color: C.B,
+      fontFamily: "'Outfit'",
+      fontWeight: 700,
+      borderBottom: `1px solid ${C.BD}30`
+    }
+  }, "\uD83D\uDC0D PYTHON"), /*#__PURE__*/React.createElement("pre", {
+    style: {
+      flex: 1,
+      margin: 0,
+      padding: "8px 10px",
+      fontSize: 10,
+      lineHeight: 1.7,
+      fontFamily: "inherit",
+      overflow: "auto",
+      whiteSpace: "pre-wrap",
+      background: C.BG,
+      color: C.DM
+    }
+  }, deToEn(code))), showDebug && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "4px 10px",
+      fontSize: 7,
+      letterSpacing: 2,
+      color: C.Y,
+      fontFamily: "'Outfit'",
+      fontWeight: 700,
+      borderBottom: `1px solid ${C.BD}30`
+    }
+  }, "\uD83D\uDD04 VARIABLEN"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      overflow: "auto",
+      padding: "6px 8px",
+      fontSize: 9.5
+    }
+  }, Object.keys(debugVars).length === 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: C.DM,
+      fontFamily: "'Outfit'",
+      fontSize: 10,
+      padding: 6
+    }
+  }, "F\xFChre Code aus um Variablen zu sehen.") : Object.entries(debugVars).map(([k, v], i) => /*#__PURE__*/React.createElement("div", {
+    key: k,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      padding: "3px 5px",
+      borderRadius: 4,
+      marginBottom: 1,
+      background: i % 2 === 0 ? C.S1 + "80" : "transparent"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.Y
+    }
+  }, k), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.T,
+      maxWidth: 100,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, v))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 10,
+      padding: "5px 7px",
+      borderRadius: 5,
+      background: C.S1,
+      border: `1px solid ${C.BD}30`,
+      fontSize: 8,
+      color: C.DM
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Outfit'",
+      fontWeight: 600,
+      marginBottom: 3
+    }
+  }, "v16 OMEGA APIs:"), /*#__PURE__*/React.createElement("div", null, "\uD83D\uDC65 mehrspieler_senden/lesen"), /*#__PURE__*/React.createElement("div", null, "\uD83C\uDF10 shader \xB7 shader_wert"), /*#__PURE__*/React.createElement("div", null, "\uD83E\uDDCA szene_3d \xB7 w\xFCrfel_3d \xB7 kugel_3d"), /*#__PURE__*/React.createElement("div", null, "\uD83D\uDD90\uFE0F kamera_starten \xB7 kamera_x/y"), /*#__PURE__*/React.createElement("div", null, "\uD83E\uDDE0 ki_erstellen \xB7 ki_lernen"), /*#__PURE__*/React.createElement("div", null, "\u269B\uFE0F schwerkraft \xB7 k\xF6rper \xB7 kraft"), /*#__PURE__*/React.createElement("div", null, "\uD83C\uDFAD partikel_explosion"), /*#__PURE__*/React.createElement("div", null, "\uD83C\uDFAE taste \xB7 spielobjekt \xB7 bewege")))), showTutor && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "4px 10px",
+      fontSize: 7,
+      letterSpacing: 2,
+      color: C.T,
+      fontFamily: "'Outfit'",
+      fontWeight: 700,
+      borderBottom: `1px solid ${C.BD}30`
+    }
+  }, "\uD83E\uDDE0 KI-TUTOR"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      overflow: "auto",
+      padding: "6px 8px",
+      display: "flex",
+      flexDirection: "column",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 2
+    }
+  }, ["Was macht das?", "Verbesserungen?", "Zeile für Zeile", "Fehler?"].map(q => /*#__PURE__*/React.createElement("button", {
+    key: q,
+    onClick: () => askTutor(q),
+    style: {
+      padding: "2px 7px",
+      borderRadius: 5,
+      border: `1px solid ${C.BD}`,
+      background: C.S1,
+      color: C.TX,
+      cursor: "pointer",
+      fontSize: 8,
+      fontFamily: "'Outfit'"
+    }
+  }, q))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 3
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    value: tutorQ,
+    onChange: e => setTutorQ(e.target.value),
+    onKeyDown: e => {
+      if (e.key === "Enter") askTutor(tutorQ);
+    },
+    placeholder: "Frage...",
+    style: {
+      flex: 1,
+      padding: "5px 7px",
+      borderRadius: 5,
+      border: `1px solid ${C.BD}`,
+      background: C.S1,
+      color: C.TX,
+      fontSize: 9.5,
+      fontFamily: "'Outfit'"
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: () => askTutor(tutorQ),
+    style: {
+      padding: "5px 8px",
+      borderRadius: 5,
+      border: "none",
+      cursor: "pointer",
+      background: C.T,
+      color: "#000",
+      fontSize: 9,
+      fontWeight: 700
+    }
+  }, tutorLoading ? "⏳" : "→")), tutorA && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "7px 8px",
+      borderRadius: 5,
+      background: C.S1,
+      border: `1px solid ${C.T}20`,
+      fontSize: 10,
+      lineHeight: 1.6,
+      fontFamily: "'Outfit'",
+      color: C.TX,
+      animation: "fadeUp .2s ease"
+    }
+  }, tutorA), !tutorA && !tutorLoading && /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: C.DM,
+      fontFamily: "'Outfit'",
+      fontSize: 9.5,
+      padding: 4
+    }
+  }, "Frage den KI-Tutor! \uD83C\uDDE9\uD83C\uDDEA")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: `radial-gradient(ellipse at center,${C.S2},${C.BG})`,
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: 0,
+      backgroundImage: `radial-gradient(circle at 1px 1px, ${C.BD}15 1px, transparent 0)`,
+      backgroundSize: "40px 40px"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative",
+      width: 400,
+      height: 400,
+      maxWidth: "100%",
+      maxHeight: "calc(100vh - 80px)",
+      zIndex: 1
+    }
+  }, /*#__PURE__*/React.createElement("canvas", {
+    ref: canvasRef,
+    width: 400,
+    height: 400,
+    style: {
+      borderRadius: 8,
+      border: `1px solid ${C.BD}40`,
+      width: "100%",
+      height: "100%",
+      boxShadow: `0 0 40px ${C.R}04`,
+      display: is3D || isShader ? "none" : "block"
+    }
+  }), /*#__PURE__*/React.createElement("canvas", {
+    ref: canvas3DRef,
+    width: 400,
+    height: 400,
+    style: {
+      borderRadius: 8,
+      border: `1px solid ${C.B}40`,
+      width: "100%",
+      height: "100%",
+      boxShadow: `0 0 40px ${C.B}08`,
+      display: is3D && !isShader ? "block" : "none",
+      animation: is3D ? "glow3d 3s ease infinite" : "none"
+    }
+  }), /*#__PURE__*/React.createElement("canvas", {
+    ref: shaderRef,
+    width: 400,
+    height: 400,
+    style: {
+      borderRadius: 8,
+      border: `1px solid ${C.P}40`,
+      width: "100%",
+      height: "100%",
+      boxShadow: `0 0 40px ${C.P}08`,
+      display: isShader ? "block" : "none",
+      animation: isShader ? "glowShader 3s ease infinite" : "none"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    ref: mouseOverlayRef,
+    style: {
+      position: "absolute",
+      inset: 0,
+      zIndex: 3,
+      cursor: "crosshair",
+      borderRadius: 8
+    }
+  })), isAnim && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 8,
+      right: 12,
+      padding: "3px 10px",
+      borderRadius: 10,
+      background: isShader ? `${C.P}20` : is3D ? `${C.B}20` : `${C.R}20`,
+      border: `1px solid ${isShader ? C.P : is3D ? C.B : C.R}25`,
+      fontSize: 8,
+      color: isShader ? C.P : is3D ? C.B : C.R,
+      fontFamily: "'Outfit'",
+      fontWeight: 700,
+      zIndex: 2,
+      animation: "breathe 2s ease infinite",
+      letterSpacing: 1
+    }
+  }, modeLabel), camActive && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 8,
+      left: 12,
+      padding: "3px 8px",
+      borderRadius: 8,
+      background: `${C.O}20`,
+      border: `1px solid ${C.O}25`,
+      fontSize: 8,
+      color: C.O,
+      fontFamily: "'Outfit'",
+      fontWeight: 700,
+      zIndex: 2,
+      animation: "pulse 1.5s infinite"
+    }
+  }, "\uD83D\uDCF7 Kamera aktiv"), isAnim && /taste\(/.test(code) && !is3D && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      bottom: 8,
+      right: 12,
+      padding: "3px 8px",
+      borderRadius: 8,
+      background: `${C.S1}cc`,
+      border: `1px solid ${C.BD}40`,
+      fontSize: 7,
+      color: C.DM,
+      fontFamily: "'Outfit'",
+      zIndex: 2
+    }
+  }, "\u2328\uFE0F Pfeiltasten"))), showVoice && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: 0,
+      background: `${C.BG}f5`,
+      backdropFilter: "blur(20px)",
+      zIndex: 100,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 14,
+      animation: "fadeIn .2s ease"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      stopVoice();
+      setShowVoice(false);
+    },
+    style: {
+      position: "absolute",
+      top: 12,
+      right: 12,
+      width: 28,
+      height: 28,
+      borderRadius: "50%",
+      border: `1px solid ${C.BD}`,
+      background: C.S1,
+      color: C.DM,
+      cursor: "pointer",
+      fontSize: 12,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }, "\u2715"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Outfit'",
+      fontSize: 22,
+      fontWeight: 900,
+      background: `linear-gradient(135deg,${C.R},${C.O})`,
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent"
+    }
+  }, listening ? "Ich höre zu..." : "Sprechen"), /*#__PURE__*/React.createElement("canvas", {
+    ref: waveRef,
+    width: 400,
+    height: 60,
+    style: {
+      borderRadius: 8,
+      border: `1px solid ${C.R}15`
+    }
+  }), (transcript || interim) && /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxWidth: 440,
+      width: "100%",
+      padding: "10px 14px",
+      borderRadius: 8,
+      background: `${C.S1}cc`,
+      border: `1px solid ${C.BD}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontFamily: "'Outfit'",
+      lineHeight: 1.5
+    }
+  }, transcript && /*#__PURE__*/React.createElement("span", null, transcript, " "), interim && /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.DM,
+      fontStyle: "italic"
+    }
+  }, interim)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 4,
+      fontSize: 10,
+      color: C.O,
+      fontFamily: "'Fira Code'"
+    }
+  }, "\u2192 ", speechToCode(transcript || interim))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, listening ? /*#__PURE__*/React.createElement("button", {
+    onClick: stopVoice,
+    style: {
+      width: 52,
+      height: 52,
+      borderRadius: "50%",
+      border: "none",
+      cursor: "pointer",
+      background: C.R,
+      color: "#fff",
+      fontSize: 16,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      animation: "breathe 1.5s ease infinite"
+    }
+  }, "\u23F9") : /*#__PURE__*/React.createElement("button", {
+    onClick: startVoice,
+    style: {
+      width: 52,
+      height: 52,
+      borderRadius: "50%",
+      border: `2px solid ${C.R}40`,
+      cursor: "pointer",
+      background: C.S1,
+      color: C.R,
+      fontSize: 16,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }, "\uD83C\uDFA4")), transcript && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 5
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      const c = speechToCode(transcript);
+      setCode(p => p + (p && !p.endsWith("\n") ? "\n" : "") + c);
+      stopVoice();
+      setShowVoice(false);
+    },
+    style: {
+      padding: "6px 14px",
+      borderRadius: 6,
+      border: "none",
+      cursor: "pointer",
+      background: `linear-gradient(135deg,${C.O},${C.R})`,
+      color: "#fff",
+      fontFamily: "'Outfit'",
+      fontSize: 10,
+      fontWeight: 700
+    }
+  }, "\u270D\uFE0F Einf\xFCgen"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      sendToAI(transcript);
+      stopVoice();
+      setShowVoice(false);
+    },
+    style: {
+      padding: "6px 14px",
+      borderRadius: 6,
+      border: "none",
+      cursor: "pointer",
+      background: `linear-gradient(135deg,${C.P},${C.B})`,
+      color: "#fff",
+      fontFamily: "'Outfit'",
+      fontSize: 10,
+      fontWeight: 700
+    }
+  }, "\uD83E\uDD16 An KI"))), showAI && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: 0,
+      background: `${C.BG}f5`,
+      backdropFilter: "blur(20px)",
+      zIndex: 100,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 10,
+      animation: "fadeIn .2s ease"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowAI(false),
+    style: {
+      position: "absolute",
+      top: 12,
+      right: 12,
+      width: 28,
+      height: 28,
+      borderRadius: "50%",
+      border: `1px solid ${C.BD}`,
+      background: C.S1,
+      color: C.DM,
+      cursor: "pointer",
+      fontSize: 12,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }, "\u2715"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 30
+    }
+  }, "\uD83E\uDDA2"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'Outfit'",
+      fontSize: 18,
+      fontWeight: 900,
+      background: `linear-gradient(135deg,${C.P},${C.B})`,
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent"
+    }
+  }, "Was soll ich erschaffen?"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 3,
+      justifyContent: "center",
+      maxWidth: 500
+    }
+  }, ["3D-Stadt mit Kugeln", "Physik Bälle Demo", "Partikel-Feuerwerk", "Pong-Spiel", "Kamera-Steuerung", "KI die Farben lernt", "Mehrspieler Cursor-Jagd", "Plasma-Shader", "Schildkröte Mandala", "Planetensystem"].map(s => /*#__PURE__*/React.createElement("button", {
+    key: s,
+    onClick: () => {
+      setAiInput(s);
+      sendToAI(s);
+    },
+    style: {
+      padding: "3px 9px",
+      borderRadius: 6,
+      border: `1px solid ${C.BD}`,
+      background: C.S1,
+      color: C.TX,
+      cursor: "pointer",
+      fontSize: 9.5,
+      fontFamily: "'Outfit'"
+    }
+  }, s))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4,
+      width: "100%",
+      maxWidth: 460
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    value: aiInput,
+    onChange: e => setAiInput(e.target.value),
+    onKeyDown: e => {
+      if (e.key === "Enter") sendToAI(aiInput);
+    },
+    placeholder: "Beschreibe was du willst...",
+    style: {
+      flex: 1,
+      padding: "9px 12px",
+      borderRadius: 8,
+      border: `1px solid ${C.BD}`,
+      background: `${C.S1}cc`,
+      color: C.TX,
+      fontSize: 11,
+      fontFamily: "'Outfit'"
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: () => sendToAI(aiInput),
+    disabled: aiLoading,
+    style: {
+      padding: "9px 16px",
+      borderRadius: 8,
+      border: "none",
+      cursor: "pointer",
+      background: aiInput.trim() ? `linear-gradient(135deg,${C.P},${C.B})` : C.S1,
+      color: aiInput.trim() ? "#fff" : C.DM,
+      fontFamily: "'Outfit'",
+      fontSize: 11,
+      fontWeight: 700
+    }
+  }, aiLoading ? /*#__PURE__*/React.createElement("span", {
+    style: {
+      animation: "spin .8s linear infinite",
+      display: "inline-block"
+    }
+  }, "\u23F3") : "→"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 18,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "0 12px",
+      borderTop: `1px solid ${C.BD}30`,
+      background: `${C.S1}80`,
+      fontSize: 7.5,
+      color: C.DM,
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      fontFamily: "'Outfit'"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 700
+    }
+  }, "BLACK SWAN OMEGA"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: isShader ? C.P : is3D ? C.B : isAnim ? C.R : C.T
+    }
+  }, modeLabel), camActive && /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.O
+    }
+  }, "\uD83D\uDCF7")), /*#__PURE__*/React.createElement("span", {
+    style: {
+      letterSpacing: 0.3
+    }
+  }, "\uD83D\uDC65Multi \xB7 \uD83C\uDF10Shader \xB7 \uD83E\uDDCA3D \xB7 \uD83D\uDD90\uFE0FK\xF6rper \xB7 \uD83E\uDDE0KI \xB7 \u269B\uFE0FPhysik \xB7 \uD83C\uDFADPartikel \xB7 \uD83C\uDFAEGame \xB7 \uD83D\uDC22Turtle \xB7 \uD83D\uDD0ASound \xB7 \uD83D\uDCF1Touch")));
 }
 
-try {
-  const root = ReactDOM.createRoot(document.getElementById("root"));
-  root.render(React.createElement(BlackSwan));
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(React.createElement(BlackSwan));
 } catch(e) {
-  document.getElementById("root").innerHTML = "<pre style='color:#f43f5e;padding:20px'>Error: " + e.message + "</pre>";
+  document.getElementById("error").textContent = "Error: " + e.message + "\n" + e.stack;
 }
+window.onerror = function(msg, url, line) {
+  document.getElementById("error").textContent = "Error: " + msg + " (Line " + line + ")";
+};
 </script>
 </body>
 </html>
