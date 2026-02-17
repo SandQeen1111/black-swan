@@ -3,21 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Black Swan v16 OMEGA — Deutsche Programmiersprache</title>
-<meta name="description" content="Black Swan: Die erste vollständige deutsche Programmiersprache mit IDE. 12 Features: 3D, Physik, KI, Shader, Multiplayer und mehr.">
-<meta property="og:title" content="Black Swan v16 OMEGA">
-<meta property="og:description" content="Programmiere auf Deutsch. Transpiliert zu Python. 12 Features in einer IDE.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1f9a2;</text></svg>">
-<style>html,body,#root{margin:0;padding:0;height:100%;overflow:hidden;background:#050508}
-#error{color:#f43f5e;font-family:monospace;padding:20px;white-space:pre-wrap}</style>
+<title>Black Swan v16 OMEGA</title>
+<style>
+html, body, #root { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #050508; }
+#status { position: fixed; top: 0; left: 0; right: 0; background: #1a1a2e; color: #e2e2f0; font-family: monospace; font-size: 12px; padding: 8px 12px; z-index: 99999; }
+#status.ok { background: #065f46; }
+#status.err { background: #7f1d1d; }
+</style>
 </head>
 <body>
+<div id="status">Loading...</div>
 <div id="root"></div>
-<div id="error"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
 <script>
+var log = [];
+function addLog(msg) { log.push(msg); document.getElementById('status').textContent = log.join(' → '); }
+window.onerror = function(msg, url, line) { 
+  document.getElementById('status').textContent = '❌ ' + msg + ' (Line ' + line + ')';
+  document.getElementById('status').className = 'err';
+};
+</script>
+
+<script>addLog('1.React');</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" onload="addLog('✅')" onerror="addLog('❌ React failed')"></script>
+
+<script>addLog('2.ReactDOM');</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" onload="addLog('✅')" onerror="addLog('❌ ReactDOM failed')"></script>
+
+<script>addLog('3.THREE');</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onload="addLog('✅')" onerror="addLog('❌ THREE failed')"></script>
+
+<script>
+addLog('4.Component');
 try {
 const {
   useState,
@@ -2722,15 +2739,25 @@ textarea:focus,input:focus{outline:none}::selection{background:${C.R}30}
     }
   }, "\uD83D\uDC65Multi \xB7 \uD83C\uDF10Shader \xB7 \uD83E\uDDCA3D \xB7 \uD83D\uDD90\uFE0FK\xF6rper \xB7 \uD83E\uDDE0KI \xB7 \u269B\uFE0FPhysik \xB7 \uD83C\uDFADPartikel \xB7 \uD83C\uDFAEGame \xB7 \uD83D\uDC22Turtle \xB7 \uD83D\uDD0ASound \xB7 \uD83D\uDCF1Touch")));
 }
+addLog('✅');
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(React.createElement(BlackSwan));
-} catch(e) {
-  document.getElementById("error").textContent = "Error: " + e.message + "\n" + e.stack;
+addLog('5.Render');
+try {
+  var root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(React.createElement(BlackSwan));
+  addLog('✅');
+  document.getElementById('status').className = 'ok';
+  // Hide status after 3 seconds if all OK
+  setTimeout(function(){ document.getElementById('status').style.display = 'none'; }, 3000);
+} catch(renderErr) {
+  addLog('❌ Render: ' + renderErr.message);
+  document.getElementById('status').className = 'err';
 }
-window.onerror = function(msg, url, line) {
-  document.getElementById("error").textContent = "Error: " + msg + " (Line " + line + ")";
-};
+
+} catch(compErr) {
+  addLog('❌ Component: ' + compErr.message);
+  document.getElementById('status').className = 'err';
+}
 </script>
 </body>
 </html>
