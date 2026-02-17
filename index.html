@@ -3,18 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Black Swan v16 OMEGA</title>
+<title>Black Swan v16 OMEGA — Deutsche Programmiersprache</title>
+<meta name="description" content="Black Swan: Die erste vollständige deutsche Programmiersprache mit IDE. 12 Features: 3D, Physik, KI, Shader, Multiplayer und mehr.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1f9a2;</text></svg>">
 <style>html,body,#root{margin:0;padding:0;height:100%;overflow:hidden;background:#050508}</style>
 </head>
 <body>
 <div id="root"></div>
+<div id="error" style="color:#f43f5e;font-family:monospace;padding:20px;white-space:pre-wrap"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useCallback, useRef } = React;
-import * as THREE from "three";
+// THREE loaded via CDN
 
 // ════════════════════════════════════════════════════════════════════
 //  B L A C K  S W A N  v16 — OMEGA EDITION  ★ COMPLETE ROADMAP ★
@@ -1344,8 +1347,13 @@ textarea:focus,input:focus{outline:none}::selection{background:${C.R}30}
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(React.createElement(BlackSwan));
+try {
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(React.createElement(BlackSwan));
+} catch(e) {
+  document.getElementById("error").textContent = "Error: " + e.message;
+}
 </script>
+<script>window.onerror=function(m,u,l){document.getElementById("error").textContent="Error: "+m+" (Line "+l+")";};</script>
 </body>
 </html>
