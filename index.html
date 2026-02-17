@@ -4,30 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Black Swan — Deutsche Programmiersprache</title>
-<meta name="description" content="Black Swan: Die erste vollständige deutsche Programmiersprache mit IDE. 12 Features: 3D, Physik, KI, Shader, Multiplayer und mehr.">
-<meta property="og:title" content="Black Swan — Deutsche Programmiersprache">
-<meta property="og:description" content="Programmiere auf Deutsch. Transpiliert zu Python. 12 Features in einer IDE.">
-<meta property="og:type" content="website">
+<meta name="description" content="Black Swan: Die erste vollständige deutsche Programmiersprache mit IDE.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦢</text></svg>">
 <style>
   html, body, #root { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #050508; }
+  #error { color: #f43f5e; font-family: monospace; padding: 20px; white-space: pre-wrap; }
 </style>
 </head>
 <body>
 <div id="root"></div>
+<div id="error"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useCallback, useRef } = React;
-// THREE loaded via CDN
 
 // ════════════════════════════════════════════════════════════════════
-//  B L A C K  S W A N  v16 — OMEGA EDITION  ★ COMPLETE ROADMAP ★
-//  👥 Multi · 🌐 Shader · 🖐️ Körper · 🧠 KI · 🧊 3D · ⚛️ Physik · 🎭 Partikel · 🎮 Game
+//  B L A C K  S W A N  — MEGABUILD
+//  🐢 Schildkröte · 🔄 Animation · 🖱 Maus · 🔊 Sound · 🤖 KI · 🎤 Voice
 // ════════════════════════════════════════════════════════════════════
 
 const KW={wenn:"if",sonst_wenn:"elif",sonst:"else",solange:"while","für":"for",
@@ -41,45 +38,36 @@ dezimal:"float",zeichenkette:"str",liste:"list",abs_wert:"abs",
 runden:"round",sortiert:"sorted",minimum:"min",maximum:"max",summe:"sum"};
 const ALL={...KW,...BF};
 const MT={".anhängen(":".append(",".herausholen(":".pop(",".sortieren(":".sort(",
-".umkehren(":".reverse(",".ersetzen(":".replace(",".teilen(":".split(",
-".einfügen(":".insert(",".entfernen(":".remove(",".großbuchstaben(":".upper(",
-".kleinbuchstaben(":".lower(",".streifen(":".strip(",".finden(":".find(",
-".zählen(":".count(",".verbinden(":".join(",".beginnt_mit(":".startswith(",
-".endet_mit(":".endswith(",".schlüssel(":".keys(",".werte(":".values("};
+".umkehren(":".reverse(",".ersetzen(":".replace(",".teilen(":".split("};
 
-function protect(c){const s=[];const r=c.replace(/("""[\s\S]*?"""|'''[\s\S]*?'''|"(?:[^"\]|\.)*"|'(?:[^'\]|\.)*'|#.*$)/gm,
+function protect(c){const s=[];const r=c.replace(/("""[\s\S]*?"""|'''[\s\S]*?'''|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|#.*$)/gm,
 m=>{s.push(m);return`\x00${s.length-1}\x00`});return{safe:r,strings:s}}
 function restore(c,s){return c.replace(/\x00(\d+)\x00/g,(_,i)=>s[+i])}
 const WB_S="(?<![a-zA-ZäöüÄÖÜß_0-9])",WB_E="(?![a-zA-ZäöüÄÖÜß_0-9])";
 function deToEn(code){let{safe,strings}=protect(code);
 for(const k of Object.keys(MT).sort((a,b)=>b.length-a.length))safe=safe.split(k).join(MT[k]);
 for(const k of Object.keys(ALL).sort((a,b)=>b.length-a.length)){
-const e=k.replace(/[.*+?^${}()|[\]\]/g,'\$&');
+const e=k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 safe=safe.replace(new RegExp(`${WB_S}${e}${WB_E}`,"g"),ALL[k])}
 return restore(safe,strings)}
 
 // ── EXECUTION ENGINE ─────────────────────────────────────────────────
 function compileGerman(code){
-let js="";const parsed=[];
-for(const raw of code.split("
-")){const t=raw.trim();
+let js="";
+const parsed=[];
+for(const raw of code.split("\n")){const t=raw.trim();
 if(!t||t.startsWith("#"))continue;
 parsed.push({indent:Math.max(0,raw.search(/\S/)),text:t})}
 const bs=[];
 for(let i=0;i<parsed.length;i++){
 const{indent,text}=parsed[i];
 const isCont=/^(sonst_wenn\s|sonst:|ausnahme|schließlich:)/.test(text);
-if(!isCont){while(bs.length>0&&indent<=bs[bs.length-1]){bs.pop();js+="}
-"}}
-else{while(bs.length>0&&indent<bs[bs.length-1]){bs.pop();js+="}
-"}
+if(!isCont){while(bs.length>0&&indent<=bs[bs.length-1]){bs.pop();js+="}\n"}}
+else{while(bs.length>0&&indent<bs[bs.length-1]){bs.pop();js+="}\n"}
 if(bs.length>0&&indent<=bs[bs.length-1])bs.pop()}
 const line=tLine(text);
-if(text.endsWith(":")){js+=line+"
-";bs.push(indent)}else{js+=line+";
-"}}
-while(bs.length>0){bs.pop();js+="}
-"}
+if(text.endsWith(":")){js+=line+"\n";bs.push(indent)}else{js+=line+";\n"}}
+while(bs.length>0){bs.pop();js+="}\n"}
 return js}
 
 function tLine(t){let l=t;
@@ -91,36 +79,19 @@ if((m=l.match(/^sonst_wenn\s+(.+):$/)))return"} else if("+tEx(m[1])+"){";
 if(l==="sonst:")return"} else {";
 if((m=l.match(/^funktion\s+([\wäöüÄÖÜß]+)\((.*)\):$/)))
 return"function "+m[1]+"("+m[2].replace(/selbst,?\s*/,"")+"){";
-if((m=l.match(/^klasse\s+([\wäöüÄÖÜß]+)\s*(\(.*\))?\s*:$/)))
-return"class "+m[1]+(m[2]?" extends "+m[2].slice(1,-1):"")+"{";
 if((m=l.match(/^zurückgeben\s+(.+)$/)))return"return "+tEx(m[1]);
 if(l==="versuche:")return"try{";if(/^ausnahme/.test(l))return"}catch(__e){";
 if(l==="abbrechen")return"break";if(l==="weiter")return"continue";
-if(l==="übergeben")return"/* pass */";if(l==="schließlich:")return"}finally{";
 return tEx(l)}
-function tEx(e){return e.replace(/wahr/g,"true").replace(/falsch/g,"false")
-.replace(/nichts/g,"null").replace(/und/g,"&&").replace(/oder/g,"||")
-.replace(/nicht\s+/g,"!").replace(/\.anhängen\(/g,".push(")
-.replace(/\.herausholen\(/g,".pop(").replace(/liste\(\)/g,"[]")
-.replace(/\.ersetzen\(/g,".replace(").replace(/\.teilen\(/g,".split(")
-.replace(/\.sortieren\(\)/g,".sort()").replace(/\.umkehren\(\)/g,".reverse()")
-.replace(/\.einfügen\(/g,".__einfügen(").replace(/\.entfernen\(/g,".__entfernen(")
-.replace(/\.großbuchstaben\(\)/g,".toUpperCase()").replace(/\.kleinbuchstaben\(\)/g,".toLowerCase()")
-.replace(/\.streifen\(\)/g,".trim()").replace(/\.finden\(/g,".indexOf(")
-.replace(/\.verbinden\(/g,".join(")
-.replace(/\.beginnt_mit\(/g,".startsWith(").replace(/\.endet_mit\(/g,".endsWith(")}
+function tEx(e){return e.replace(/\bwahr\b/g,"true").replace(/\bfalsch\b/g,"false")
+.replace(/\bnichts\b/g,"null").replace(/\bund\b/g,"&&").replace(/\boder\b/g,"||")
+.replace(/\bnicht\s+/g,"!").replace(/\.anhängen\(/g,".push(")
+.replace(/\.herausholen\(/g,".pop(").replace(/\bliste\(\)/g,"[]")}
 function tErr(m){return m?m.replace(/is not defined/g,"ist nicht definiert")
 .replace(/is not a function/g,"ist keine Funktion")
-.replace(/Cannot read properties of/g,"Kann Eigenschaft nicht lesen von")
-.replace(/undefined/g,"undefiniert").replace(/null/g,"nichts")
-.replace(/SyntaxError/g,"Syntaxfehler").replace(/TypeError/g,"Typfehler")
-.replace(/RangeError/g,"Bereichsfehler").replace(/ReferenceError/g,"Referenzfehler")
-.replace(/Maximum call stack/g,"Maximale Aufruftiefe"):m}
+.replace(/SyntaxError/g,"Syntaxfehler").replace(/TypeError/g,"Typfehler"):m}
 
-// ══════════════════════════════════════════════════════════════════════
-//  R U N T I M E S
-// ══════════════════════════════════════════════════════════════════════
-
+// ── RUNTIME LIBRARY ──────────────────────────────────────────────────
 const RUNTIME = `
 function bereich(...a){let s=0,e,st=1;if(a.length===1)e=a[0];else if(a.length===2){s=a[0];e=a[1]}else{s=a[0];e=a[1];st=a[2]};const r=[];for(let i=s;st>0?i<e:i>e;i+=st)r.push(i);return r}
 function länge(x){return x.length!=null?x.length:Object.keys(x).length}
@@ -138,21 +109,15 @@ function sinus(x){return Math.sin(x)}
 function kosinus(x){return Math.cos(x)}
 function wurzel(x){return Math.sqrt(x)}
 function potenz(x,n){return Math.pow(x,n)}
-function sortiert(a,opts){const r=[...a];r.sort((x,y)=>x>y?1:x<y?-1:0);return r;}
-function liste(x){if(x===undefined)return[];if(typeof x==="string")return x.split("");if(Array.isArray(x))return[...x];return Array.from(x);}
-function wörterbuch(pairs){if(!pairs)return{};const d={};for(const p of pairs)d[p[0]]=p[1];return d;}
-function typ(x){if(Array.isArray(x))return"liste";if(x===null)return"nichts";return typeof x;}
-function formatieren(s,...args){let i=0;return s.replace(/{}/g,()=>args[i++]!==undefined?String(args[i-1]):"{}")}
 const PI=Math.PI;
 function zeichne_kreis(x,y,r,c){__d.push({t:"c",x,y,r,c:c||"#fff"})}
 function zeichne_linie(x1,y1,x2,y2,c,w){__d.push({t:"l",x1,y1,x2,y2,c:c||"#fff",w:w||2})}
 function zeichne_rechteck(x,y,w,h,c){__d.push({t:"r",x,y,w,h,c:c||"#fff"})}
 function zeichne_text(x,y,txt,c,s){__d.push({t:"tx",x,y,txt:String(txt),c:c||"#fff",s:s||16})}
 function fülle(c){__d.push({t:"f",c})}
-Array.prototype.__einfügen=function(pos,item){this.splice(pos,0,item)};
-Array.prototype.__entfernen=function(item){const i=this.indexOf(item);if(i>-1)this.splice(i,1)};
 `;
 
+// ── TURTLE CLASS (runtime) ───────────────────────────────────────────
 const TURTLE_RT = `
 const __turtle={x:200,y:200,a:-90,c:"#f43f5e",w:2,pen:true,vis:true};
 const schildkröte={
@@ -160,15 +125,22 @@ const schildkröte={
     if(__turtle.pen)__d.push({t:"l",x1:__turtle.x,y1:__turtle.y,x2:nx,y2:ny,c:__turtle.c,w:__turtle.w});
     __turtle.x=nx;__turtle.y=ny},
   rückwärts(d){schildkröte.vorwärts(-d)},
-  links(w){__turtle.a-=w},rechts(w){__turtle.a+=w},
-  farbe(f){__turtle.c=f},breite(b){__turtle.w=b},
-  stift_hoch(){__turtle.pen=false},stift_runter(){__turtle.pen=true},
-  gehe_zu(x,y){if(__turtle.pen)__d.push({t:"l",x1:__turtle.x,y1:__turtle.y,x2:x,y2:y,c:__turtle.c,w:__turtle.w});__turtle.x=x;__turtle.y=y},
-  kreis(r){__d.push({t:"c",x:__turtle.x,y:__turtle.y,r,c:__turtle.c})},
-  verstecken(){__turtle.vis=false},zeigen(){__turtle.vis=true},
-  position(){return[__turtle.x,__turtle.y]}
-};`;
+  links(w){__turtle.a-=w},
+  rechts(w){__turtle.a+=w},
+  farbe(f){__turtle.c=f},
+  breite(b){__turtle.w=b},
+  stift_hoch(){__turtle.pen=false},
+  stift_runter(){__turtle.pen=true},
+  gehe_zu(x,y){if(__turtle.pen)__d.push({t:"l",x1:__turtle.x,y1:__turtle.y,x2:x,y2:y,c:__turtle.c,w:__turtle.w});
+    __turtle.x=x;__turtle.y=y},
+  kreis(r){__d.push({t:"c",x:__turtle.x,y:__turtle.y,r,c:__turtle.c,w:__turtle.w})},
+  verstecken(){__turtle.vis=false},
+  zeigen(){__turtle.vis=true},
+  position(){return[__turtle.x,__turtle.y]},
+};
+`;
 
+// ── SOUND RUNTIME ────────────────────────────────────────────────────
 const SOUND_RT = `
 function spiele_ton(freq,dauer,typ){
   if(typeof __audioCtx==='undefined')return;
@@ -178,1216 +150,695 @@ function spiele_ton(freq,dauer,typ){
   g.gain.exponentialRampToValueAtTime(0.001,__audioCtx.currentTime+(dauer||0.3));
   o.stop(__audioCtx.currentTime+(dauer||0.3));}catch(e){}}
 const NOTEN={C3:131,D3:147,E3:165,F3:175,G3:196,A3:220,B3:247,
-  C4:262,D4:294,E4:330,F4:349,G4:392,A4:440,B4:494,C5:523,D5:587,E5:659,F5:698,G5:784,A5:880,B5:988};
-function spiele_note(note,dauer){spiele_ton(NOTEN[note]||440,dauer)}`;
-
-const PHYSICS_RT = `
-const __körper_liste=[];let __schwerkraft_y=0.3,__schwerkraft_x=0;
-function schwerkraft(sy,sx){__schwerkraft_y=sy;if(sx!==undefined)__schwerkraft_x=sx;}
-function körper(x,y,b,h,opt){
-  const k={x,y,b:b||20,h:h||20,vx:0,vy:0,fest:false,farbe:"#f43f5e",rückprall:0.7,reibung:0.99,id:__körper_liste.length};
-  if(opt){if(opt.fest!==undefined)k.fest=opt.fest;if(opt.farbe)k.farbe=opt.farbe;
-    if(opt.rückprall!==undefined)k.rückprall=opt.rückprall;if(opt.vx!==undefined)k.vx=opt.vx;if(opt.vy!==undefined)k.vy=opt.vy;}
-  __körper_liste.push(k);return k;}
-function kraft(k,fx,fy){if(!k.fest){k.vx+=fx;k.vy+=fy;}}
-function physik_schritt(){
-  for(const k of __körper_liste){if(k.fest)continue;k.vx+=__schwerkraft_x;k.vy+=__schwerkraft_y;k.vx*=k.reibung;k.vy*=k.reibung;
-    k.x+=k.vx;k.y+=k.vy;
-    if(k.x<0){k.x=0;k.vx*=-k.rückprall;}if(k.x+k.b>400){k.x=400-k.b;k.vx*=-k.rückprall;}
-    if(k.y+k.h>400){k.y=400-k.h;k.vy*=-k.rückprall;}if(k.y<0){k.y=0;k.vy*=-k.rückprall;}}
-  for(let i=0;i<__körper_liste.length;i++){for(let j=i+1;j<__körper_liste.length;j++){
-    const a=__körper_liste[i],b=__körper_liste[j];
-    if(a.x<b.x+b.b&&a.x+a.b>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y){
-      if(a.fest&&!b.fest){b.vy*=-b.rückprall;b.y=a.y-b.h;}
-      else if(!a.fest&&b.fest){a.vy*=-a.rückprall;a.y=b.y-a.h;}
-      else if(!a.fest&&!b.fest){const t=a.vx;a.vx=b.vx*0.9;b.vx=t*0.9;const t2=a.vy;a.vy=b.vy*0.9;b.vy=t2*0.9;a.x-=1;b.x+=1;}}}}}
-function kollision(a,b){return a.x<b.x+b.b&&a.x+a.b>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
-function körper_zeichnen(k){__d.push({t:"r",x:k.x,y:k.y,w:k.b,h:k.h,c:k.farbe});}
-function alle_körper_zeichnen(){for(const k of __körper_liste)körper_zeichnen(k);}`;
-
-const PARTICLE_RT = `
-const __partikel=[];
-function partikel_erzeugen(x,y,opt){const n=opt?.anzahl||20,sp=opt?.geschwindigkeit||3,f=opt?.farbe||"#facc15",l=opt?.leben||60,g=opt?.größe||3;
-  for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2;const v=Math.random()*sp+sp*0.2;
-    __partikel.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,leben:l,maxL:l,farbe:f,größe:g+Math.random()*2});}}
-function partikel_explosion(x,y,farbe,anzahl){partikel_erzeugen(x,y,{farbe:farbe||"#fb923c",anzahl:anzahl||40,geschwindigkeit:5,leben:45});}
-function partikel_regen(y,farbe,anzahl){for(let i=0;i<(anzahl||5);i++){
-  __partikel.push({x:Math.random()*400,y:y||0,vx:(Math.random()-0.5)*0.5,vy:Math.random()*2+1,leben:120,maxL:120,farbe:farbe||"#38bdf8",größe:2+Math.random()*2});}}
-function partikel_aktualisieren(){for(let i=__partikel.length-1;i>=0;i--){
-  const p=__partikel[i];p.x+=p.vx;p.y+=p.vy;p.vy+=0.04;p.leben--;
-  if(p.leben<=0)__partikel.splice(i,1);
-  else{const a=p.leben/p.maxL;__d.push({t:"c",x:p.x,y:p.y,r:p.größe*a,c:p.farbe});}}}
-function partikel_anzahl(){return __partikel.length;}`;
-
-const GAME_RT = `
-function taste(t){return __keys[t.toLowerCase()]||__keys[t]||false;}
-function punkte_anzeigen(x,y,p,opt){__d.push({t:"tx",x,y,txt:String(p),c:opt?.farbe||"#facc15",s:opt?.größe||20});}
-function spielobjekt(x,y,b,h,farbe){return{x,y,b:b||20,h:h||20,farbe:farbe||"#fff",vx:0,vy:0};}
-function objekt_zeichnen(o){__d.push({t:"r",x:o.x,y:o.y,w:o.b,h:o.h,c:o.farbe});}
-function objekt_kreis(o,r){__d.push({t:"c",x:o.x,y:o.y,r:r||o.b/2,c:o.farbe});}
-function objekte_kollidieren(a,b){return a.x<b.x+(b.b||0)&&a.x+(a.b||0)>b.x&&a.y<b.y+(b.h||0)&&a.y+(a.h||0)>b.y;}
-function abstand(a,b){return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2);}
-function bewege(o,dx,dy){o.x+=dx;o.y+=dy;}
-function begrenze(o,minX,minY,maxX,maxY){if(o.x<minX)o.x=minX;if(o.y<minY)o.y=minY;if(o.x+o.b>maxX)o.x=maxX-o.b;if(o.y+o.h>maxY)o.y=maxY-o.h;}`;
-
-// ══════════════════════════════════════════════════════════════════════
-//  🖐️ BODY TRACKING RUNTIME — Webcam-basierte Bewegungserkennung
-// ══════════════════════════════════════════════════════════════════════
-const CAMERA_RT = `
-let kamera_x=200,kamera_y=200,kamera_bewegung=0,kamera_aktiv=false;
-function kamera_starten(){kamera_aktiv=true;if(__cam)__cam.start();}
-function kamera_stoppen(){kamera_aktiv=false;if(__cam)__cam.stop();}
-`;
-
-// ══════════════════════════════════════════════════════════════════════
-//  🧠 KI TRAINING RUNTIME — Trainierbare KI auf Deutsch
-// ══════════════════════════════════════════════════════════════════════
-const KI_RT = `
-function ki_erstellen(){return{daten:[],klassen:new Set()};}
-function ki_lernen(ki,klasse,merkmale){
-  if(!ki||!klasse||!merkmale)return;
-  ki.daten.push({klasse,merkmale:Array.isArray(merkmale)?merkmale:[merkmale]});
-  ki.klassen.add(klasse);
-  return ki.daten.length;
-}
-function ki_vorhersagen(ki,merkmale){
-  if(!ki||!ki.daten.length)return"unbekannt";
-  const m=Array.isArray(merkmale)?merkmale:[merkmale];
-  const dists=ki.daten.map(d=>{
-    let s=0;for(let i=0;i<Math.min(m.length,d.merkmale.length);i++)s+=(m[i]-d.merkmale[i])**2;
-    return{klasse:d.klasse,dist:Math.sqrt(s)};
-  });
-  dists.sort((a,b)=>a.dist-b.dist);
-  const k=Math.min(3,dists.length);
-  const votes={};
-  for(let i=0;i<k;i++){const c=dists[i].klasse;votes[c]=(votes[c]||0)+1;}
-  let best="",bestN=0;
-  for(const[c,n]of Object.entries(votes)){if(n>bestN){bestN=n;best=c;}}
-  return best;
-}
-function ki_genauigkeit(ki){
-  if(!ki||ki.daten.length<4)return 0;
-  let korrekt=0;
-  for(let i=0;i<ki.daten.length;i++){
-    const test=ki.daten[i];
-    const rest={daten:ki.daten.filter((_,j)=>j!==i),klassen:ki.klassen};
-    if(ki_vorhersagen(rest,test.merkmale)===test.klasse)korrekt++;
-  }
-  return runden(korrekt/ki.daten.length*100,1);
-}
-function ki_daten_anzahl(ki){return ki?ki.daten.length:0;}
-function ki_klassen(ki){return ki?[...ki.klassen]:[];}
-`;
-
-// ══════════════════════════════════════════════════════════════════════
-//  🧊 3D RUNTIME — Three.js mit deutscher API
-// ══════════════════════════════════════════════════════════════════════
-const THREE_RT = `
-let __3d_mode=false;
-let __3d_cam={x:0,y:2,z:6,lx:0,ly:0,lz:0};
-let __3d_rot={x:0,y:0,z:0};
-let __3d_bg="#0a0a14";
-function szene_3d(hintergrund){__3d_mode=true;if(hintergrund)__3d_bg=hintergrund;__d3.length=0;}
-function würfel_3d(x,y,z,größe,farbe){__d3.push({t:"box",x:x||0,y:y||0,z:z||0,s:größe||1,c:farbe||"#f43f5e"});}
-function kugel_3d(x,y,z,radius,farbe){__d3.push({t:"sphere",x:x||0,y:y||0,z:z||0,r:radius||0.5,c:farbe||"#38bdf8"});}
-function zylinder_3d(x,y,z,radius,höhe,farbe){__d3.push({t:"cyl",x:x||0,y:y||0,z:z||0,r:radius||0.5,h:höhe||1,c:farbe||"#2dd4bf"});}
-function ebene_3d(x,y,z,b,h,farbe){__d3.push({t:"plane",x:x||0,y:y||0,z:z||0,w:b||10,h:h||10,c:farbe||"#1a1a2e"});}
-function licht_3d(x,y,z,farbe,stärke){__d3.push({t:"light",x:x||5,y:y||5,z:z||5,c:farbe||"#ffffff",i:stärke||1});}
-function kamera_3d(x,y,z){__3d_cam.x=x;__3d_cam.y=y;__3d_cam.z=z;}
-function blickpunkt_3d(x,y,z){__3d_cam.lx=x;__3d_cam.ly=y;__3d_cam.lz=z;}
-function drehen_3d(rx,ry,rz){__3d_rot.x+=rx||0;__3d_rot.y+=ry||0;__3d_rot.z+=rz||0;}
-function text_3d(x,y,z,txt,farbe,größe){__d3.push({t:"txt3d",x:x||0,y:y||0,z:z||0,txt:String(txt),c:farbe||"#fff",s:größe||1});}
-`;
-
-// ══════════════════════════════════════════════════════════════════════
-//  👥 MULTIPLAYER RUNTIME — Shared state via storage API
-// ══════════════════════════════════════════════════════════════════════
-const MULTI_RT = `
-let __mp_id="spieler_"+Math.floor(Math.random()*99999);
-let __mp_daten={};
-let __mp_alle={};
-function mehrspieler_name(name){__mp_id=name||__mp_id;}
-function mehrspieler_senden(schlüssel,wert){
-  __mp_daten[schlüssel]=wert;
-  if(__storage){try{__storage.set("mp:"+__mp_id,JSON.stringify({id:__mp_id,t:Date.now(),d:__mp_daten}),true)}catch(e){}}
-}
-function mehrspieler_lesen(spieler,schlüssel){
-  if(__mp_alle[spieler]&&__mp_alle[spieler].d)return __mp_alle[spieler].d[schlüssel];
-  return null;
-}
-function mehrspieler_alle(){return Object.keys(__mp_alle).filter(k=>k!==__mp_id);}
-function mehrspieler_anzahl(){return Object.keys(__mp_alle).length;}
-function mein_name(){return __mp_id;}
-`;
-
-// ══════════════════════════════════════════════════════════════════════
-//  🌐 SHADER RUNTIME — WebGL Fragment-Shader mit deutscher API
-// ══════════════════════════════════════════════════════════════════════
-const SHADER_RT = `
-let __shader_mode=false;
-let __shader_code="";
-let __shader_uniforms={};
-function shader(code){__shader_mode=true;__shader_code=code;}
-function shader_wert(name,wert){__shader_uniforms[name]=wert;}
+  C4:262,D4:294,E4:330,F4:349,G4:392,A4:440,B4:494,
+  C5:523,D5:587,E5:659,F5:698,G5:784,A5:880,B5:988};
+function spiele_note(note,dauer){spiele_ton(NOTEN[note]||440,dauer)}
 `;
 
 // ── HIGHLIGHTING ─────────────────────────────────────────────────────
-const KW_RE="wenn|sonst_wenn|sonst|solange|für|abbrechen|weiter|übergeben|funktion|zurückgeben|klasse|selbst|wahr|falsch|und|oder|nicht|nichts|versuche|ausnahme|schließlich|in";
-const FN_RE="drucke|bereich|länge|zeichenkette|ganzzahl|dezimal|liste|sortiert|minimum|maximum|summe|zufall|zufall_dezimal|sinus|kosinus|wurzel|potenz|abs_wert|runden|typ|formatieren|wörterbuch|zeichne_kreis|zeichne_linie|zeichne_rechteck|zeichne_text|fülle|spiele_ton|spiele_note|schildkröte|schwerkraft|körper|kraft|physik_schritt|kollision|körper_zeichnen|alle_körper_zeichnen|partikel_erzeugen|partikel_explosion|partikel_regen|partikel_aktualisieren|partikel_anzahl|taste|spielobjekt|objekt_zeichnen|objekt_kreis|objekte_kollidieren|abstand|bewege|begrenze|punkte_anzeigen|kamera_starten|kamera_stoppen|ki_erstellen|ki_lernen|ki_vorhersagen|ki_genauigkeit|ki_daten_anzahl|ki_klassen|szene_3d|würfel_3d|kugel_3d|zylinder_3d|ebene_3d|licht_3d|kamera_3d|blickpunkt_3d|drehen_3d|text_3d|mehrspieler_name|mehrspieler_senden|mehrspieler_lesen|mehrspieler_alle|mehrspieler_anzahl|mein_name|shader|shader_wert";
 function hlDE(code){return code.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-.replace(/(#.*?)$/gm,'<em style="color:#525280">$1</em>')
-.replace(/("(?:[^"\]|\.)*"|'(?:[^'\]|\.)*')/g,'<b style="color:#2dd4bf">$1</b>')
-.replace(/(\d+\.?\d*)/g,'<b style="color:#facc15">$1</b>')
-.replace(new RegExp(`(?<![a-zA-ZäöüÄÖÜß_])(${KW_RE})(?![a-zA-ZäöüÄÖÜß_])`,"g"),'<b style="color:#f43f5e">$1</b>')
-.replace(new RegExp(`(?<![a-zA-ZäöüÄÖÜß_.])(${FN_RE})(?=[.(])`,"g"),'<b style="color:#38bdf8">$1</b>')}
-
-// ── AI PROMPTS ───────────────────────────────────────────────────────
-const AI_SYS=`Du bist Black Swan — die deutsche Programmiersprache. Generiere NUR Code, KEIN Markdown/Backticks.
-Keywords: wenn, sonst, sonst_wenn, für, solange, funktion, zurückgeben, wahr, falsch, und, oder, nicht
-Funktionen: drucke(), bereich(), länge(), zeichenkette(), ganzzahl(), zufall(min,max), sinus(), kosinus(), PI
-2D Canvas: zeichne_kreis(x,y,r,farbe), zeichne_linie(x1,y1,x2,y2,farbe,breite), zeichne_rechteck(x,y,b,h,farbe), zeichne_text(x,y,text,farbe,größe), fülle(farbe)
-Schildkröte: schildkröte.vorwärts(d), .links(w), .rechts(w), .farbe(f), .breite(b), .kreis(r)
-Physik: schwerkraft(stärke), körper(x,y,b,h,{fest,farbe,rückprall}), kraft(k,fx,fy), physik_schritt(), alle_körper_zeichnen()
-Partikel: partikel_explosion(x,y,farbe,anzahl), partikel_regen(y,farbe), partikel_aktualisieren()
-Game: taste("links"/"rechts"/"hoch"/"runter"/"leertaste"), spielobjekt(x,y,b,h,farbe), objekt_zeichnen(o), objekte_kollidieren(a,b), bewege(o,dx,dy), begrenze(o,0,0,400,400)
-3D: szene_3d(), würfel_3d(x,y,z,größe,farbe), kugel_3d(x,y,z,radius,farbe), zylinder_3d(x,y,z,r,h,farbe), ebene_3d(x,y,z,b,h,farbe), licht_3d(x,y,z), kamera_3d(x,y,z), drehen_3d(rx,ry,rz)
-Kamera: kamera_starten(), kamera_x, kamera_y, kamera_bewegung
-KI: ki=ki_erstellen(), ki_lernen(ki,klasse,merkmale), ki_vorhersagen(ki,merkmale), ki_genauigkeit(ki)
-Mehrspieler: mehrspieler_name(name), mehrspieler_senden(schlüssel,wert), mehrspieler_lesen(spieler,schlüssel), mehrspieler_alle(), mehrspieler_anzahl(), mein_name()
-Shader: shader(glsl_code), shader_wert(name,wert) — GLSL Fragment-Shader, uniforms: zeit, auflösung, maus
-Animation: funktion zeichne(): für 60fps. Nutze rahmen, maus_x, maus_y, maus_gedrückt
-Sound: spiele_ton(freq,dauer), spiele_note("C4",dauer)
-Alles auf Deutsch.`;
-
-const TUTOR_SYS=`Du bist der Black Swan KI-Tutor. Erkläre Code auf Deutsch in einfacher Sprache. Max 4-5 Sätze. Sei ermutigend.
-Black Swan ist eine deutsche Programmiersprache die zu Python transpiliert. für=for, wenn=if, funktion=def, drucke=print.
-Neue Features: 3D (szene_3d, würfel_3d, kugel_3d), Physik (schwerkraft, körper), Partikel, Game Engine (taste), Kamera (kamera_starten), KI Training (ki_erstellen, ki_lernen), Mehrspieler (mehrspieler_senden/lesen), Shader (shader(glsl)).`;
+.replace(/(#.*?)$/gm,'<em style="color:#4a4a6a">$1</em>')
+.replace(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g,'<b style="color:#2dd4bf">$1</b>')
+.replace(/\b(\d+\.?\d*)\b/g,'<b style="color:#facc15">$1</b>')
+.replace(/(?<![a-zA-ZäöüÄÖÜß_])(wenn|sonst_wenn|sonst|solange|für|abbrechen|weiter|funktion|zurückgeben|klasse|selbst|wahr|falsch|und|oder|nicht|nichts|versuche|ausnahme|in)(?![a-zA-ZäöüÄÖÜß_])/g,
+'<b style="color:#f43f5e">$1</b>')
+.replace(/(?<![a-zA-ZäöüÄÖÜß_.])(drucke|bereich|länge|zeichenkette|ganzzahl|dezimal|liste|sortiert|minimum|maximum|summe|zufall|zufall_dezimal|sinus|kosinus|wurzel|potenz|zeichne_kreis|zeichne_linie|zeichne_rechteck|zeichne_text|fülle|spiele_ton|spiele_note|schildkröte)(?=[.(])/g,
+'<b style="color:#38bdf8">$1</b>')}
 
 // ── SPEECH TO CODE ───────────────────────────────────────────────────
 function speechToCode(raw){let t=raw.trim();
-const kws=["drucke","wenn","sonst","solange","für","funktion","zurückgeben","wahr","falsch",
-"und","oder","nicht","nichts","bereich","länge","zeichenkette","ganzzahl","liste",
-"zeichne_kreis","zeichne_linie","zeichne_rechteck","fülle","sinus","kosinus","zufall",
-"schildkröte","spiele_ton","körper","schwerkraft","partikel_explosion","taste","spielobjekt",
-"szene_3d","würfel_3d","kugel_3d","kamera_starten","ki_erstellen","ki_lernen",
-"mehrspieler_senden","mehrspieler_lesen","mehrspieler_name","shader","shader_wert","in"];
-for(const k of kws)t=t.replace(new RegExp("\b"+k+"\b","gi"),k);
-const nums=[["null","0"],["eins","1"],["zwei","2"],["drei","3"],["vier","4"],["fünf","5"],
-["sechs","6"],["sieben","7"],["acht","8"],["neun","9"],["zehn","10"]];
-for(const[w,d]of nums)t=t.replace(new RegExp(`\b${w}\b`,"gi"),d);
-t=t.replace(/gleich gleich/gi,"==").replace(/größer/gi,">").replace(/kleiner/gi,"<")
-.replace(/gleich/gi,"=").replace(/plus/gi,"+").replace(/minus/gi,"-")
-.replace(/klammer auf/gi,"(").replace(/klammer zu/gi,")").replace(/komma/gi,",");
-t=t.replace(/^drucke\s+(?!\()(.+?)$/gm,(_,a)=>/[+\-*/=<>]/.test(a)?`drucke(${a})`:`drucke("${a}")`);
+const kws=["drucke","wenn","sonst","solange","für","funktion","zurückgeben","wahr","falsch","und","oder","nicht","nichts","bereich","länge","zeichenkette","ganzzahl","liste","zeichne_kreis","zeichne_linie","zeichne_rechteck","fülle","sinus","kosinus","zufall","schildkröte","in","spiele_ton","spiele_note"];
+for(const k of kws)t=t.replace(new RegExp("\\b"+k+"\\b","gi"),k);
+const nums=[["null","0"],["eins","1"],["zwei","2"],["drei","3"],["vier","4"],["fünf","5"],["sechs","6"],["sieben","7"],["acht","8"],["neun","9"],["zehn","10"],["hundert","100"],["tausend","1000"]];
+for(const[w,d]of nums)t=t.replace(new RegExp(`\\b${w}\\b`,"gi"),d);
+t=t.replace(/(\d+)\s+bis\s+(\d+)/g,"$1, $2");
+t=t.replace(/\bgleich gleich\b/gi,"==");t=t.replace(/\bgrößer gleich\b/gi,">=");
+t=t.replace(/\bkleiner gleich\b/gi,"<=");t=t.replace(/\bgrößer\b/gi,">");
+t=t.replace(/\bkleiner\b/gi,"<");t=t.replace(/\bist gleich\b/gi,"=");
+t=t.replace(/\bgleich\b/gi,"=");t=t.replace(/\bplus\b/gi,"+");
+t=t.replace(/\bminus\b/gi,"-");t=t.replace(/\bgeteilt durch\b/gi,"/");
+t=t.replace(/(\w)\s+mal\s+(\w)/gi,"$1 * $2");
+t=t.replace(/\s*doppelpunkt\s*$/gi,":");t=t.replace(/\bdoppelpunkt\b/gi,":");
+t=t.replace(/\bklammer auf\b/gi,"(");t=t.replace(/\bklammer zu\b/gi,")");
+t=t.replace(/\bkomma\b/gi,",");
+t=t.replace(/^drucke\s+(?!\()(.+?)$/gm,(_,a)=>/[+\-*/=<>]|zeichenkette|länge/.test(a)?`drucke(${a})`:`drucke("${a}")`);
+t=t.replace(/bereich\s+(\d+)\s*,\s*(\d+)/g,"bereich($1, $2)");
 if(/^(für\s+\w+\s+in|wenn\s|solange\s|funktion\s)/.test(t)&&!t.endsWith(":"))t+=":";
-return t.replace(/\s+/g," ").trim()}
+if(/^sonst$/i.test(t.trim()))t="sonst:";
+return t.replace(/\s+/g," ").replace(/\(\s+/g,"(").replace(/\s+\)/g,")").replace(/,\s*/g,", ").trim()}
 
-// ── GALLERY ──────────────────────────────────────────────────────────
+// ── AI ───────────────────────────────────────────────────────────────
+const AI_SYS=`Du bist Black Swan. Generiere NUR Code, KEIN Markdown/Backticks/Text.
+Keywords: wenn, sonst, sonst_wenn, für, solange, funktion, zurückgeben, wahr, falsch, und, oder, nicht
+Funktionen: drucke(), bereich(), länge(), zeichenkette(), ganzzahl(), zufall(min,max), sinus(), kosinus(), PI
+Canvas: zeichne_kreis(x,y,r,farbe), zeichne_linie(x1,y1,x2,y2,farbe,breite), zeichne_rechteck(x,y,b,h,farbe), zeichne_text(x,y,text,farbe), fülle(farbe)
+Schildkröte: schildkröte.vorwärts(d), schildkröte.links(w), schildkröte.rechts(w), schildkröte.farbe(f), schildkröte.breite(b), schildkröte.kreis(r), schildkröte.stift_hoch(), schildkröte.stift_runter()
+Animation: Definiere funktion zeichne(): für 60fps Loop. Nutze rahmen, maus_x, maus_y, maus_gedrückt
+Sound: spiele_ton(frequenz, dauer), spiele_note("C4", dauer)
+Alles auf Deutsch. Keine englischen Wörter.`;
+
+// ── EXAMPLES ─────────────────────────────────────────────────────────
 const GALLERY=[
-{t:"🧊 3D Welt",d:"Three.js 3D Szene",c:`# 3D-Szene mit deutscher API!
-szene_3d("#0a0a1a")
-licht_3d(5, 8, 5, "#ffffff", 1)
-licht_3d(-3, 4, -2, "#38bdf8", 0.5)
-
-# Boden
-ebene_3d(0, -1, 0, 12, 12, "#1a1a2e")
-
-# Gebäude
-für i in bereich(0, 5):
-    für j in bereich(0, 5):
-        höhe = 0.3 + zufall_dezimal() * 2
-        x = (i - 2) * 2.2
-        z = (j - 2) * 2.2
-        farbe = "hsl(" + zeichenkette(i * 50 + j * 30) + ",60%,45%)"
-        würfel_3d(x, höhe / 2 - 1, z, höhe, farbe)
-
-# Kugel oben drauf
-kugel_3d(0, 2, 0, 0.6, "#f43f5e")
-
-kamera_3d(6, 5, 6)
-blickpunkt_3d(0, 0, 0)
-
-funktion zeichne():
-    drehen_3d(0, 0.008, 0)`},
-
-{t:"🖐️ Kamera",d:"Körpersteuerung",c:`# Webcam-Bewegungssteuerung!
-# Erlaube Kamerazugriff wenn gefragt
-kamera_starten()
-
-funktion zeichne():
-    fülle("#08080f")
-    # Bewegungsanzeige
-    größe = 10 + kamera_bewegung * 2
-    farbe = "hsl(" + zeichenkette(kamera_bewegung * 3) + ",80%,55%)"
-    zeichne_kreis(kamera_x, kamera_y, größe, farbe)
-    # Spur
-    zeichne_kreis(kamera_x, kamera_y, größe + 15, farbe + "30")
-    zeichne_kreis(kamera_x, kamera_y, größe + 30, farbe + "15")
-    # Info
-    zeichne_text(10, 20, "🖐️ Bewege dich vor der Kamera!", "#666", 13)
-    zeichne_text(10, 40, "Bewegung: " + zeichenkette(ganzzahl(kamera_bewegung)), "#525280", 11)
-    zeichne_text(10, 56, "X: " + zeichenkette(ganzzahl(kamera_x)) + " Y: " + zeichenkette(ganzzahl(kamera_y)), "#525280", 11)`},
-
-{t:"🧠 KI-Train",d:"KI Trainieren",c:`# Trainiere deine eigene KI!
-ki = ki_erstellen()
-
-# Trainings-Daten: Tiere nach [Größe, Geschwindigkeit, Gewicht]
-ki_lernen(ki, "Maus", [0.1, 0.3, 0.02])
-ki_lernen(ki, "Maus", [0.08, 0.25, 0.03])
-ki_lernen(ki, "Maus", [0.12, 0.35, 0.02])
-ki_lernen(ki, "Katze", [0.4, 0.5, 4.0])
-ki_lernen(ki, "Katze", [0.35, 0.45, 3.5])
-ki_lernen(ki, "Katze", [0.45, 0.55, 5.0])
-ki_lernen(ki, "Hund", [0.6, 0.7, 25.0])
-ki_lernen(ki, "Hund", [0.55, 0.8, 20.0])
-ki_lernen(ki, "Hund", [0.7, 0.65, 30.0])
-ki_lernen(ki, "Pferd", [2.0, 0.9, 500.0])
-ki_lernen(ki, "Pferd", [1.8, 0.85, 450.0])
-ki_lernen(ki, "Pferd", [2.2, 0.95, 550.0])
-
-# Testen
-drucke("🧠 KI-Modell trainiert!")
-drucke("Daten: " + zeichenkette(ki_daten_anzahl(ki)) + " Einträge")
-drucke("Klassen: " + zeichenkette(ki_klassen(ki)))
-drucke("Genauigkeit: " + zeichenkette(ki_genauigkeit(ki)) + "%")
-drucke("")
-drucke("--- Vorhersagen ---")
-drucke("Klein+Langsam → " + ki_vorhersagen(ki, [0.1, 0.2, 0.03]))
-drucke("Mittel+Schnell → " + ki_vorhersagen(ki, [0.5, 0.6, 15.0]))
-drucke("Groß+Schnell → " + ki_vorhersagen(ki, [1.9, 0.88, 480.0]))
-
-# Visualisierung
-klassen = ki_klassen(ki)
-farben = ["#f43f5e", "#38bdf8", "#facc15", "#2dd4bf"]
-für k in bereich(0, länge(klassen)):
-    zeichne_rechteck(20, 240 + k * 35, 360, 28, farben[k] + "20")
-    zeichne_text(30, 260 + k * 35, klassen[k], farben[k], 16)
-zeichne_text(100, 220, "🧠 Trainierte Klassen", "#666", 14)`},
-
-{t:"⚛️ Physik",d:"Physik-Engine",c:`# Physik-Engine: Bälle mit Schwerkraft
-schwerkraft(0.4)
-körper(0, 380, 400, 20, {"fest": wahr, "farbe": "#1a1a2e"})
-körper(100, 300, 150, 10, {"fest": wahr, "farbe": "#38bdf8"})
-für i in bereich(0, 8):
-    x = 50 + i * 45
-    farbe = "hsl(" + zeichenkette(i * 40) + ",75%,55%)"
-    körper(x, 20 + i * 15, 18, 18, {"farbe": farbe, "rückprall": 0.6 + i * 0.04})
-funktion zeichne():
-    fülle("#08080f")
-    physik_schritt()
-    alle_körper_zeichnen()
-    zeichne_text(10, 18, "⚛️ Physik-Engine", "#525280", 13)`},
-
-{t:"🎮 Pong",d:"Tastatur-Spiel",c:`# PONG — Pfeiltasten ↑↓
-schläger = spielobjekt(20, 170, 12, 60, "#f43f5e")
-ki_s = spielobjekt(368, 170, 12, 60, "#38bdf8")
-ball = spielobjekt(195, 195, 10, 10, "#facc15")
-ball.vx = 3
-ball.vy = 2
-p_l = 0
-p_r = 0
-funktion zeichne():
-    fülle("#08080f")
-    wenn taste("hoch"):
-        bewege(schläger, 0, -5)
-    wenn taste("runter"):
-        bewege(schläger, 0, 5)
-    begrenze(schläger, 0, 0, 400, 400)
-    wenn ki_s.y + 30 < ball.y:
-        bewege(ki_s, 0, 3)
-    wenn ki_s.y + 30 > ball.y:
-        bewege(ki_s, 0, -3)
-    ball.x = ball.x + ball.vx
-    ball.y = ball.y + ball.vy
-    wenn ball.y < 0 oder ball.y > 390:
-        ball.vy = ball.vy * -1
-    wenn objekte_kollidieren(ball, schläger):
-        ball.vx = abs_wert(ball.vx) * 1.05
-        spiele_ton(440, 0.05)
-        partikel_erzeugen(ball.x, ball.y, {"farbe": "#f43f5e", "anzahl": 8})
-    wenn objekte_kollidieren(ball, ki_s):
-        ball.vx = -abs_wert(ball.vx) * 1.05
-        spiele_ton(330, 0.05)
-    wenn ball.x < 0:
-        p_r = p_r + 1
-        ball.x = 195
-        ball.y = 195
-        ball.vx = 3
-    wenn ball.x > 400:
-        p_l = p_l + 1
-        ball.x = 195
-        ball.y = 195
-        ball.vx = -3
-    partikel_aktualisieren()
-    für i in bereich(0, 20):
-        zeichne_rechteck(198, i * 22, 4, 12, "#1a1a2e")
-    objekt_zeichnen(schläger)
-    objekt_zeichnen(ki_s)
-    objekt_zeichnen(ball)
-    punkte_anzeigen(140, 35, p_l, {"farbe": "#f43f5e"})
-    punkte_anzeigen(240, 35, p_r, {"farbe": "#38bdf8"})`},
-
-{t:"🎭 Partikel",d:"Klick-Effekte",c:`# Klicke für Partikel-Explosionen!
-funktion zeichne():
-    fülle("#08080f")
-    partikel_regen(0, "#38bdf855", 2)
-    wenn maus_gedrückt:
-        farbe = "hsl(" + zeichenkette(rahmen * 5) + ",80%,60%)"
-        partikel_explosion(maus_x, maus_y, farbe, 30)
-        spiele_ton(200 + maus_y, 0.1)
-    partikel_aktualisieren()
-    zeichne_text(100, 390, "Klicke irgendwo!", "#333", 12)`},
-
-{t:"🐢 Stern",d:"Schildkröte",c:`# Schildkröte zeichnet einen Stern
+{t:"🐢 Stern",c:`# Schildkröte zeichnet einen Stern
 schildkröte.farbe("#facc15")
 schildkröte.breite(3)
+
 für i in bereich(0, 5):
     schildkröte.vorwärts(150)
     schildkröte.rechts(144)`},
+{t:"🌀 Spirale",c:`# Spirale mit zunehmender Länge
+schildkröte.breite(2)
 
-{t:"🌀 Spirale",d:"Regenbogen",c:`schildkröte.breite(2)
 für i in bereich(0, 150):
     farbe = "hsl(" + zeichenkette(i * 2.4) + ",80%,60%)"
     schildkröte.farbe(farbe)
     schildkröte.vorwärts(i * 1.5)
     schildkröte.rechts(91)`},
-
-{t:"🌳 Fraktal",d:"Rekursiver Baum",c:`# Fraktalbaum — rekursive Verzweigung
-funktion ast(tiefe, länge, winkel):
+{t:"❄️ Schneeflocke",c:`# Koch-Schneeflocke
+funktion koch(länge, tiefe):
     wenn tiefe == 0:
+        schildkröte.vorwärts(länge)
         zurückgeben nichts
-    # Äste werden dünner und farbiger
-    schildkröte.breite(tiefe * 0.8)
-    grün = ganzzahl(100 + (8 - tiefe) * 20)
-    schildkröte.farbe("rgb(60," + zeichenkette(grün) + ",40)")
-    wenn tiefe < 3:
-        schildkröte.farbe("#2dd4bf")
-    schildkröte.vorwärts(länge)
-    # Links verzweigen
-    schildkröte.links(winkel)
-    ast(tiefe - 1, länge * 0.72, winkel)
-    # Rechts verzweigen
-    schildkröte.rechts(winkel * 2)
-    ast(tiefe - 1, länge * 0.72, winkel)
-    # Zurück
-    schildkröte.links(winkel)
-    schildkröte.rückwärts(länge)
+    koch(länge / 3, tiefe - 1)
+    schildkröte.links(60)
+    koch(länge / 3, tiefe - 1)
+    schildkröte.rechts(120)
+    koch(länge / 3, tiefe - 1)
+    schildkröte.links(60)
+    koch(länge / 3, tiefe - 1)
 
-# Baum zeichnen
-schildkröte.stift_hoch()
-schildkröte.gehe_zu(200, 380)
-schildkröte.stift_runter()
-schildkröte.links(90)
-ast(8, 65, 28)`},
+schildkröte.farbe("#38bdf8")
+schildkröte.breite(1)
+schildkröte.gehe_zu(80, 300)
 
-{t:"🪐 Orbit",d:"Animation",c:`funktion zeichne():
+für i in bereich(0, 3):
+    koch(250, 4)
+    schildkröte.rechts(120)`},
+{t:"🌸 Blume",c:`# Blume aus Kreisbögen
+für blatt in bereich(0, 12):
+    farbe = "hsl(" + zeichenkette(blatt * 30) + ",75%,55%)"
+    schildkröte.farbe(farbe)
+    schildkröte.breite(2)
+    für i in bereich(0, 30):
+        schildkröte.vorwärts(8)
+        schildkröte.rechts(12)
+    schildkröte.rechts(30)
+
+schildkröte.farbe("#facc15")
+schildkröte.gehe_zu(200, 200)
+schildkröte.kreis(15)`},
+{t:"⭐ Mandala",c:`# Symmetrisches Mandala
+für ring in bereich(1, 9):
+    für i in bereich(0, ring * 6):
+        winkel = i * 2 * PI / (ring * 6)
+        r = ring * 24
+        x = 200 + r * kosinus(winkel)
+        y = 200 + r * sinus(winkel)
+        zeichne_kreis(x, y, 5 + ring, "hsl(" + zeichenkette(ring * 40) + ",80%,60%)")`},
+{t:"🌊 Ozean",c:`# Sinuswellen-Animation
+für w in bereich(0, 15):
+    für x in bereich(0, 400):
+        phase = w * 0.6
+        amp = 12 + w * 3
+        y = 30 + w * 26 + amp * sinus(x * 0.025 + phase)
+        b = 80 + w * 11
+        zeichne_kreis(x, y, 1.5, "rgb(20," + zeichenkette(b) + ",210)")`},
+{t:"🔥 Feuerwerk",c:`# Partikel-Explosionen
+für burst in bereich(0, 10):
+    cx = 40 + zufall(0, 320)
+    cy = 40 + zufall(0, 320)
+    für i in bereich(0, 50):
+        winkel = zufall_dezimal() * 2 * PI
+        kraft = zufall_dezimal() * 70 + 10
+        x = cx + kraft * kosinus(winkel)
+        y = cy + kraft * sinus(winkel)
+        r = 200 + zufall(0, 55)
+        g = zufall(0, 200)
+        zeichne_kreis(x, y, 2 + zufall_dezimal() * 2, "rgb(" + zeichenkette(r) + "," + zeichenkette(g) + ",40)")`},
+{t:"🎮 Mausjagd",c:`# INTERAKTIV: Bewege die Maus über den Canvas!
+funktion zeichne():
+    fülle("#0a0a14")
+    # Kreis folgt der Maus
+    zeichne_kreis(maus_x, maus_y, 20, "#f43f5e")
+    zeichne_kreis(maus_x, maus_y, 35, "rgba(244,63,94,0.2)")
+    zeichne_kreis(maus_x, maus_y, 50, "rgba(244,63,94,0.1)")
+    # Fadenkreuz
+    zeichne_linie(maus_x - 40, maus_y, maus_x + 40, maus_y, "#ffffff20", 1)
+    zeichne_linie(maus_x, maus_y - 40, maus_x, maus_y + 40, "#ffffff20", 1)
+    # Koordinaten
+    zeichne_text(10, 20, "X: " + zeichenkette(ganzzahl(maus_x)), "#666", 12)
+    zeichne_text(10, 38, "Y: " + zeichenkette(ganzzahl(maus_y)), "#666", 12)
+    zeichne_text(10, 56, "Frame: " + zeichenkette(rahmen), "#444", 12)`},
+{t:"🎨 Malen",c:`# INTERAKTIV: Klicke und male auf dem Canvas!
+punkte = liste()
+
+funktion zeichne():
+    wenn maus_gedrückt:
+        punkte.anhängen([maus_x, maus_y, rahmen])
+    für p in punkte:
+        farbe = "hsl(" + zeichenkette(p[2] * 3) + ",80%,60%)"
+        zeichne_kreis(p[0], p[1], 5, farbe)
+    zeichne_text(10, 20, "Punkte: " + zeichenkette(länge(punkte)), "#666", 12)
+    wenn länge(punkte) == 0:
+        zeichne_text(130, 200, "Klicke zum Malen!", "#333", 18)`},
+{t:"🪐 Orbit",c:`# ANIMATION: Planeten umkreisen die Sonne
+funktion zeichne():
     fülle("#050510")
-    für i in bereich(0, 40):
-        sx = (i * 137 + rahmen * 0.2) % 400
+    # Sterne
+    für i in bereich(0, 30):
+        sx = (i * 137 + rahmen) % 400
         sy = (i * 89) % 400
-        zeichne_kreis(sx, sy, 0.8, "#ffffff20")
+        zeichne_kreis(sx, sy, 1, "#ffffff30")
+    # Sonne
     zeichne_kreis(200, 200, 25, "#facc15")
-    für p in bereich(0, 6):
-        abst = 55 + p * 32
-        winkel = rahmen * (0.025 - p * 0.003) + p * 1.2
-        x = 200 + abst * kosinus(winkel)
-        y = 200 + abst * sinus(winkel)
-        zeichne_kreis(x, y, 5 + p * 2, "hsl(" + zeichenkette(p * 55 + 180) + ",70%,55%)")`},
+    zeichne_kreis(200, 200, 30, "rgba(250,204,21,0.15)")
+    # Planeten
+    für p in bereich(0, 5):
+        abstand = 60 + p * 35
+        tempo = 0.02 - p * 0.003
+        winkel = rahmen * tempo + p * 1.2
+        x = 200 + abstand * kosinus(winkel)
+        y = 200 + abstand * sinus(winkel)
+        farbe = "hsl(" + zeichenkette(p * 60 + 180) + ",70%,55%)"
+        zeichne_kreis(x, y, 6 + p * 2, farbe)`},
+{t:"🎵 Musik",c:`# Spiele eine Melodie — klicke Ausführen!
+# (Sound funktioniert nur mit Ausführen-Button)
 
-{t:"📊 Sortier",d:"Bubblesort Live",c:`# Bubblesort — Schritt für Schritt animiert
-werte = liste()
-für i in bereich(0, 50):
-    werte.anhängen(zufall(10, 380))
+melodie = ["C4", "E4", "G4", "C5", "G4", "E4", "C4", "D4", "F4", "A4", "D5", "A4", "F4", "D4"]
 
-zeiger = 0
-durch = 0
-fertig = falsch
-tausch = 0
-
-funktion zeichne():
-    fülle("#08080f")
-    wenn nicht fertig:
-        # Ein Vergleichsschritt pro Frame
-        wenn werte[zeiger] > werte[zeiger + 1]:
-            temp = werte[zeiger]
-            werte[zeiger] = werte[zeiger + 1]
-            werte[zeiger + 1] = temp
-            tausch = tausch + 1
-        zeiger = zeiger + 1
-        wenn zeiger >= länge(werte) - 1 - durch:
-            zeiger = 0
-            durch = durch + 1
-            wenn durch >= länge(werte) - 1:
-                fertig = wahr
-    # Balken zeichnen
-    b = 400 / länge(werte)
-    für i in bereich(0, länge(werte)):
-        farbe = "#38bdf8"
-        wenn i == zeiger und nicht fertig:
-            farbe = "#f43f5e"
-        wenn fertig:
-            farbe = "hsl(" + zeichenkette(i * 5) + ",75%,55%)"
-        zeichne_rechteck(i * b, 400 - werte[i], b - 1, werte[i], farbe)
-    zeichne_text(10, 18, "Bubblesort — Tausch: " + zeichenkette(tausch), "#e2e2f0", 12)
-    wenn fertig:
-        zeichne_text(130, 200, "✓ Sortiert!", "#2dd4bf", 18)`},
-
-{t:"👥 Multi",d:"Mehrspieler",c:`# Mehrspieler — öffne dieses Artifact in 2 Tabs!
-mehrspieler_name("spieler_" + zeichenkette(zufall(1, 999)))
-farbe_id = zufall(0, 360)
-
-funktion zeichne():
-    fülle("#08080f")
-    # Eigene Position senden
-    mehrspieler_senden("x", maus_x)
-    mehrspieler_senden("y", maus_y)
-    mehrspieler_senden("farbe", farbe_id)
-    # Alle Spieler anzeigen
-    spieler = mehrspieler_alle()
-    für s in spieler:
-        sx = mehrspieler_lesen(s, "x")
-        sy = mehrspieler_lesen(s, "y")
-        sf = mehrspieler_lesen(s, "farbe")
-        wenn sx und sy:
-            farbe = "hsl(" + zeichenkette(sf) + ",70%,55%)"
-            zeichne_kreis(sx, sy, 15, farbe)
-            zeichne_text(sx - 15, sy - 22, s, farbe, 9)
-    # Eigenen Cursor zeichnen
-    meine_farbe = "hsl(" + zeichenkette(farbe_id) + ",80%,60%)"
-    zeichne_kreis(maus_x, maus_y, 18, meine_farbe)
-    zeichne_kreis(maus_x, maus_y, 25, meine_farbe + "40")
-    zeichne_text(maus_x - 15, maus_y - 26, mein_name(), meine_farbe, 9)
-    # Info
-    zeichne_text(10, 18, "👥 Spieler: " + zeichenkette(mehrspieler_anzahl()), "#666", 12)
-    zeichne_text(10, 36, "Öffne in 2 Tabs!", "#525280", 10)`},
-
-{t:"🌐 Shader",d:"Julia-Fraktal",c:`# GPU Julia-Fraktal — Maus bewegt den Parameter!
-shader("precision highp float; uniform float zeit; uniform vec2 auflösung; uniform vec2 maus; void main(){ vec2 uv=(gl_FragCoord.xy-auflösung*0.5)/auflösung.y*2.5; vec2 c=vec2(cos(zeit*0.3)*0.7,sin(zeit*0.23)*0.7); if(maus.x>0.0)c=(maus/auflösung-0.5)*2.5; vec2 z=uv; float i; for(i=0.0;i<128.0;i++){if(dot(z,z)>4.0)break; z=vec2(z.x*z.x-z.y*z.y,2.0*z.x*z.y)+c;} float t=i/128.0; float r=0.5+0.5*cos(3.0+t*6.28+0.0); float g=0.5+0.5*cos(3.0+t*6.28+2.1); float b=0.5+0.5*cos(3.0+t*6.28+4.2); if(i>=128.0){r=0.0;g=0.0;b=0.0;} gl_FragColor=vec4(r,g,b,1.0); }")
-
-funktion zeichne():
-    x = 0`},
-
-{t:"🧬 Life",d:"Conway's Game of Life",c:`# Conway's Game of Life — Zellulärer Automat
-größe = 40
-zellen = liste()
-nächste = liste()
-
-# Zufälliges Startmuster
-für y in bereich(0, größe):
-    zeile = liste()
-    z2 = liste()
-    für x in bereich(0, größe):
-        zeile.anhängen(zufall(0, 4) == 0)
-        z2.anhängen(falsch)
-    zellen.anhängen(zeile)
-    nächste.anhängen(z2)
-
-funktion nachbarn(gx, gy):
-    n = 0
-    für dy in bereich(-1, 2):
-        für dx in bereich(-1, 2):
-            wenn dx == 0 und dy == 0:
-                weiter
-            nx = (gx + dx) % größe
-            ny = (gy + dy) % größe
-            wenn zellen[ny][nx]:
-                n = n + 1
-    zurückgeben n
-
-gen = 0
-funktion zeichne():
-    gen = gen + 1
-    # Regeln anwenden
-    für y in bereich(0, größe):
-        für x in bereich(0, größe):
-            n = nachbarn(x, y)
-            wenn zellen[y][x]:
-                nächste[y][x] = (n == 2 oder n == 3)
-            sonst:
-                nächste[y][x] = (n == 3)
-    # Kopieren und zeichnen
-    für y in bereich(0, größe):
-        für x in bereich(0, größe):
-            zellen[y][x] = nächste[y][x]
-            wenn zellen[y][x]:
-                zeichne_rechteck(x * 10, y * 10, 9, 9, "#2dd4bf")
-    zeichne_text(10, 396, "Generation: " + zeichenkette(gen), "#525280", 10)`},
+für i in bereich(0, länge(melodie)):
+    note = melodie[i]
+    spiele_note(note, 0.3)
+    drucke("♪ " + note)
+    # Visualisierung
+    x = 30 + i * 25
+    h = 50 + zufall(20, 100)
+    farbe = "hsl(" + zeichenkette(i * 25) + ",75%,55%)"
+    zeichne_rechteck(x, 400 - h, 18, h, farbe)`},
+{t:"🔢 FizzBuzz",c:`für i in bereich(1, 31):
+    wenn i % 15 == 0:
+        drucke("FizzBuzz")
+    sonst_wenn i % 3 == 0:
+        drucke("Fizz")
+    sonst_wenn i % 5 == 0:
+        drucke("Buzz")
+    sonst:
+        drucke(zeichenkette(i))`},
+{t:"🧬 DNA",c:`# Doppelhelix-Struktur
+für i in bereich(0, 200):
+    y = i * 2
+    x1 = 200 + 60 * sinus(i * 0.08)
+    x2 = 200 - 60 * sinus(i * 0.08)
+    zeichne_kreis(x1, y, 4, "#f43f5e")
+    zeichne_kreis(x2, y, 4, "#38bdf8")
+    wenn i % 8 == 0:
+        zeichne_linie(x1, y, x2, y, "#ffffff15", 1)`},
 ];
 
 // ── COLORS ───────────────────────────────────────────────────────────
 const C={R:"#f43f5e",B:"#38bdf8",T:"#2dd4bf",Y:"#facc15",P:"#a78bfa",O:"#fb923c",
-  BG:"#050508",S1:"#0a0a12",S2:"#0f0f1a",BD:"#1a1a2e",TX:"#e2e2f0",DM:"#525280"};
+  BG:"#050508",S1:"#0a0a12",S2:"#0f0f1a",BD:"#1a1a2e",TX:"#e2e2f0",DM:"#4a4a6a"};
 
-// ══════════════════════════════════════════════════════════════════════
-//  C O M P O N E N T
 // ══════════════════════════════════════════════════════════════════════
 function BlackSwan() {
   const [code, setCode] = useState(GALLERY[0].c);
   const [activeG, setActiveG] = useState(0);
   const [consoleOut, setConsoleOut] = useState([]);
   const [isAnim, setIsAnim] = useState(false);
-  const [is3D, setIs3D] = useState(false);
-  const [isShader, setIsShader] = useState(false);
   const canvasRef = useRef(null);
-  const canvas3DRef = useRef(null);
-  const shaderRef = useRef(null); // WebGL shader canvas
   const consoleRef = useRef(null);
   const animRef = useRef(null);
   const mouseRef = useRef({x:200,y:200,down:false});
-  const keysRef = useRef({});
   const audioRef = useRef(null);
-  const threeRef = useRef(null);
-  const glRef = useRef(null); // WebGL context for shaders
-  const mpPollRef = useRef(null); // Multiplayer polling interval
+  const stateRef = useRef(null);
 
-  // Camera (webcam) tracking
-  const camRef = useRef({active:false,x:200,y:200,motion:0,video:null,prevFrame:null});
-
-  // Panels
-  const [showPy, setShowPy] = useState(false);
-  const [showDebug, setShowDebug] = useState(false);
-  const [showTutor, setShowTutor] = useState(false);
-  const [showAI, setShowAI] = useState(false);
+  // Overlays
   const [showVoice, setShowVoice] = useState(false);
-  const [debugVars, setDebugVars] = useState({});
-  const [camActive, setCamActive] = useState(false);
-
-  // Voice
+  const [showAI, setShowAI] = useState(false);
+  const [showPy, setShowPy] = useState(false);
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [interim, setInterim] = useState("");
+  const [aiInput, setAiInput] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
   const [voiceOK, setVoiceOK] = useState(false);
   const recRef = useRef(null);
   const waveRef = useRef(null);
+  const analyserRef = useRef(null);
   const waveAnimRef = useRef(null);
 
-  // AI / Tutor
-  const [aiInput, setAiInput] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const [tutorQ, setTutorQ] = useState("");
-  const [tutorA, setTutorA] = useState("");
-  const [tutorLoading, setTutorLoading] = useState(false);
-
-  // ── KEYBOARD ───────────────────────────────────────────────────────
+  // Voice init
   useEffect(() => {
-    const km={"arrowleft":"links","arrowright":"rechts","arrowup":"hoch","arrowdown":"runter"," ":"leertaste"};
-    const down=e=>{const k=e.key.toLowerCase();keysRef.current[k]=true;if(km[k])keysRef.current[km[k]]=true;
-      if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k)&&isAnim)e.preventDefault();};
-    const up=e=>{const k=e.key.toLowerCase();keysRef.current[k]=false;if(km[k])keysRef.current[km[k]]=false;};
-    window.addEventListener("keydown",down);window.addEventListener("keyup",up);
-    return()=>{window.removeEventListener("keydown",down);window.removeEventListener("keyup",up);};
-  }, [isAnim]);
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+    setVoiceOK(true);
+    const r = new SR(); r.lang="de-DE"; r.continuous=true; r.interimResults=true;
+    r.onresult = ev => {
+      let fin="",intr="";
+      for(let i=ev.resultIndex;i<ev.results.length;i++){
+        if(ev.results[i].isFinal)fin+=ev.results[i][0].transcript;
+        else intr+=ev.results[i][0].transcript;}
+      setInterim(intr);
+      if(fin)setTranscript(p=>p+(p?" ":"")+fin);
+    };
+    r.onerror=()=>{};
+    r.onend=()=>setListening(false);
+    recRef.current=r;
+  }, []);
 
-  // ── VOICE INIT ─────────────────────────────────────────────────────
-  useEffect(()=>{
-    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;setVoiceOK(true);
-    const r=new SR();r.lang="de-DE";r.continuous=true;r.interimResults=true;
-    r.onresult=ev=>{let fin="",intr="";
-      for(let i=ev.resultIndex;i<ev.results.length;i++){if(ev.results[i].isFinal)fin+=ev.results[i][0].transcript;else intr+=ev.results[i][0].transcript;}
-      setInterim(intr);if(fin)setTranscript(p=>p+(p?" ":"")+fin);};
-    r.onerror=()=>{};r.onend=()=>setListening(false);recRef.current=r;
-  },[]);
+  // Canvas mouse
+  useEffect(() => {
+    const cv = canvasRef.current;
+    if (!cv) return;
+    const rect = () => cv.getBoundingClientRect();
+    const onMove = e => {
+      const r = rect();
+      mouseRef.current.x = ((e.clientX - r.left) / r.width) * 400;
+      mouseRef.current.y = ((e.clientY - r.top) / r.height) * 400;
+    };
+    const onDown = () => { mouseRef.current.down = true; };
+    const onUp = () => { mouseRef.current.down = false; };
+    cv.addEventListener("mousemove", onMove);
+    cv.addEventListener("mousedown", onDown);
+    window.addEventListener("mouseup", onUp);
+    return () => { cv.removeEventListener("mousemove", onMove);
+      cv.removeEventListener("mousedown", onDown);
+      window.removeEventListener("mouseup", onUp); };
+  }, []);
 
-  // ── CANVAS MOUSE + TOUCH (overlay approach for all modes) ────────
-  const mouseOverlayRef = useRef(null);
-  useEffect(()=>{
-    const cv=mouseOverlayRef.current;if(!cv)return;
-    const rect=()=>cv.getBoundingClientRect();
-    const sp=(cx,cy)=>{const r=rect();mouseRef.current.x=((cx-r.left)/r.width)*400;mouseRef.current.y=((cy-r.top)/r.height)*400;};
-    const mm=e=>sp(e.clientX,e.clientY),md=()=>{mouseRef.current.down=true},mu=()=>{mouseRef.current.down=false};
-    const ts=e=>{e.preventDefault();const t=e.touches[0];sp(t.clientX,t.clientY);mouseRef.current.down=true;};
-    const tm=e=>{e.preventDefault();const t=e.touches[0];sp(t.clientX,t.clientY);};
-    const te=e=>{e.preventDefault();mouseRef.current.down=false;};
-    cv.addEventListener("mousemove",mm);cv.addEventListener("mousedown",md);window.addEventListener("mouseup",mu);
-    cv.addEventListener("touchstart",ts,{passive:false});cv.addEventListener("touchmove",tm,{passive:false});cv.addEventListener("touchend",te,{passive:false});
-    return()=>{cv.removeEventListener("mousemove",mm);cv.removeEventListener("mousedown",md);window.removeEventListener("mouseup",mu);
-      cv.removeEventListener("touchstart",ts);cv.removeEventListener("touchmove",tm);cv.removeEventListener("touchend",te);};
-  },[]);
-
-  // ── WEBCAM MOTION DETECTION ────────────────────────────────────────
-  const startCamera = useCallback(async ()=>{
-    if(camRef.current.active)return;
-    try{
-      const stream=await navigator.mediaDevices.getUserMedia({video:{width:160,height:120,facingMode:"user"}});
-      const v=document.createElement("video");v.srcObject=stream;v.play();
-      camRef.current={active:true,x:200,y:200,motion:0,video:v,prevFrame:null};
-      setCamActive(true);
-    }catch(e){console.log("Kamera nicht verfügbar");}
-  },[]);
-
-  const processCamera = useCallback(()=>{
-    const cam=camRef.current;if(!cam.active||!cam.video||cam.video.readyState<2)return;
-    const cv=document.createElement("canvas");cv.width=40;cv.height=30;
-    const ctx=cv.getContext("2d");
-    ctx.drawImage(cam.video,0,0,40,30);
-    const data=ctx.getImageData(0,0,40,30).data;
-    const curr=new Float32Array(40*30);
-    for(let i=0;i<40*30;i++)curr[i]=(data[i*4]+data[i*4+1]+data[i*4+2])/3;
-    if(cam.prevFrame){
-      let totalDiff=0,cx=0,cy=0,count=0;
-      for(let y=0;y<30;y++){for(let x=0;x<40;x++){
-        const diff=Math.abs(curr[y*40+x]-cam.prevFrame[y*40+x]);
-        if(diff>15){totalDiff+=diff;cx+=x;cy+=y;count++;}
-      }}
-      cam.motion=Math.min(100,totalDiff/500);
-      if(count>0){cam.x=(1-cx/count/40)*400;cam.y=cy/count/30*400;}// Mirror X
+  // ── RENDER CANVAS ──────────────────────────────────────────────────
+  const renderCanvas = useCallback((draws, turtle) => {
+    const cv = canvasRef.current;
+    if (!cv) return;
+    const ctx = cv.getContext("2d");
+    ctx.clearRect(0, 0, 400, 400);
+    ctx.fillStyle = "#08080f";
+    ctx.fillRect(0, 0, 400, 400);
+    // Grid
+    ctx.strokeStyle = "#ffffff06";
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x < 400; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 400); ctx.stroke(); }
+    for (let y = 0; y < 400; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(400, y); ctx.stroke(); }
+    // Draw commands
+    for (const d of draws) {
+      if (d.t === "f") { ctx.fillStyle = d.c; ctx.fillRect(0, 0, 400, 400); continue; }
+      ctx.fillStyle = d.c || "#fff"; ctx.strokeStyle = d.c || "#fff";
+      if (d.t === "c") { ctx.beginPath(); ctx.arc(d.x, d.y, Math.max(0.5, d.r), 0, Math.PI * 2); ctx.fill(); }
+      else if (d.t === "l") { ctx.lineWidth = d.w || 2; ctx.beginPath(); ctx.moveTo(d.x1, d.y1); ctx.lineTo(d.x2, d.y2); ctx.stroke(); }
+      else if (d.t === "r") { ctx.fillRect(d.x, d.y, d.w, d.h); }
+      else if (d.t === "tx") { ctx.font = `${d.s || 16}px 'Outfit',sans-serif`; ctx.fillText(d.txt, d.x, d.y); }
     }
-    cam.prevFrame=curr;
-  },[]);
-
-  // ── THREE.JS SETUP ─────────────────────────────────────────────────
-  const init3D = useCallback(()=>{
-    if(threeRef.current)return threeRef.current;
-    const cv=canvas3DRef.current;if(!cv)return null;
-    try{
-      const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:false});
-      renderer.setSize(400,400);renderer.setPixelRatio(1);
-      renderer.shadowMap.enabled=true;
-      const scene=new THREE.Scene();
-      const camera=new THREE.PerspectiveCamera(55,1,0.1,1000);
-      camera.position.set(0,3,7);camera.lookAt(0,0,0);
-      const ambient=new THREE.AmbientLight(0x404060,0.6);scene.add(ambient);
-      threeRef.current={renderer,scene,camera,ambient,meshes:[],lights:[]};
-      return threeRef.current;
-    }catch(e){return null;}
-  },[]);
-
-  const render3D = useCallback((d3,camData,rot)=>{
-    const three=init3D();if(!three)return;
-    const{renderer,scene,camera}=three;
-    // Clear old meshes and lights
-    for(const m of three.meshes)scene.remove(m);
-    for(const l of three.lights)scene.remove(l);
-    three.meshes=[];three.lights=[];
-    scene.background=new THREE.Color("#0a0a14");
-    for(const d of d3){
-      if(d.t==="box"){
-        const g=new THREE.BoxGeometry(d.s,d.s,d.s);
-        const m=new THREE.MeshPhongMaterial({color:d.c});
-        const mesh=new THREE.Mesh(g,m);mesh.position.set(d.x,d.y,d.z);
-        mesh.rotation.x=rot.x;mesh.rotation.y=rot.y;
-        scene.add(mesh);three.meshes.push(mesh);
-      }else if(d.t==="sphere"){
-        const g=new THREE.SphereGeometry(d.r,24,24);
-        const m=new THREE.MeshPhongMaterial({color:d.c});
-        const mesh=new THREE.Mesh(g,m);mesh.position.set(d.x,d.y,d.z);
-        scene.add(mesh);three.meshes.push(mesh);
-      }else if(d.t==="cyl"){
-        const g=new THREE.CylinderGeometry(d.r,d.r,d.h,16);
-        const m=new THREE.MeshPhongMaterial({color:d.c});
-        const mesh=new THREE.Mesh(g,m);mesh.position.set(d.x,d.y,d.z);
-        scene.add(mesh);three.meshes.push(mesh);
-      }else if(d.t==="plane"){
-        const g=new THREE.PlaneGeometry(d.w,d.h);
-        const m=new THREE.MeshPhongMaterial({color:d.c,side:THREE.DoubleSide});
-        const mesh=new THREE.Mesh(g,m);mesh.position.set(d.x,d.y,d.z);
-        mesh.rotation.x=-Math.PI/2;
-        scene.add(mesh);three.meshes.push(mesh);
-      }else if(d.t==="light"){
-        const l=new THREE.DirectionalLight(new THREE.Color(d.c),d.i||1);
-        l.position.set(d.x,d.y,d.z);
-        scene.add(l);three.lights.push(l);
-      }
+    // Turtle indicator
+    if (turtle && turtle.vis) {
+      const tx = turtle.x, ty = turtle.y, ta = turtle.a * Math.PI / 180;
+      ctx.save();
+      ctx.translate(tx, ty); ctx.rotate(ta);
+      ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(-6, -6); ctx.lineTo(-3, 0); ctx.lineTo(-6, 6); ctx.closePath();
+      ctx.fillStyle = "#f43f5ecc"; ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 1; ctx.stroke();
+      ctx.restore();
     }
-    if(camData){camera.position.set(camData.x,camData.y,camData.z);camera.lookAt(camData.lx,camData.ly,camData.lz);}
-    renderer.render(scene,camera);
-  },[init3D]);
+  }, []);
 
-  // ── SHADER RENDERER (cached) ─────────────────────────────────────
-  const shaderCacheRef = useRef({src:null,prog:null});
-  const initShader = useCallback((fragSrc)=>{
-    const cv=shaderRef.current;if(!cv)return null;
-    let gl=glRef.current;
-    if(!gl){gl=cv.getContext("webgl")||cv.getContext("experimental-webgl");glRef.current=gl;}
-    if(!gl)return null;
-    // Return cached program if source hasn't changed
-    if(shaderCacheRef.current.src===fragSrc&&shaderCacheRef.current.prog)return{prog:shaderCacheRef.current.prog,gl};
-    // Clean up old program
-    if(shaderCacheRef.current.prog)gl.deleteProgram(shaderCacheRef.current.prog);
-    const vs=`attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`;
-    const compile=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh;};
-    const prog=gl.createProgram();
-    gl.attachShader(prog,compile(gl.VERTEX_SHADER,vs));
-    gl.attachShader(prog,compile(gl.FRAGMENT_SHADER,fragSrc));
-    gl.linkProgram(prog);
-    if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){shaderCacheRef.current={src:null,prog:null};return null;}
-    gl.useProgram(prog);
-    const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
-    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
-    const pos=gl.getAttribLocation(prog,"p");gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
-    shaderCacheRef.current={src:fragSrc,prog};
-    return{prog,gl};
-  },[]);
-
-  const renderShader = useCallback((fragSrc,time)=>{
-    const r=initShader(fragSrc);if(!r)return;
-    const{prog,gl}=r;
-    gl.useProgram(prog);
-    gl.viewport(0,0,400,400);
-    const tLoc=gl.getUniformLocation(prog,"zeit");if(tLoc)gl.uniform1f(tLoc,time);
-    const rLoc=gl.getUniformLocation(prog,"auflösung");if(rLoc)gl.uniform2f(rLoc,400,400);
-    const mLoc=gl.getUniformLocation(prog,"maus");if(mLoc)gl.uniform2f(mLoc,mouseRef.current.x,400-mouseRef.current.y);
-    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
-  },[initShader]);
-
-  // ── MULTIPLAYER POLLING ────────────────────────────────────────────
-  const mpDataRef = useRef({});
-  const pollMultiplayer = useCallback(async()=>{
-    if(!window.storage)return;
-    try{
-      const keys=await window.storage.list("mp:",true);
-      if(keys&&keys.keys){
-        const fresh={};
-        for(const k of keys.keys){
-          try{
-            const r=await window.storage.get(k,true);
-            if(r&&r.value){const d=JSON.parse(r.value);
-              if(Date.now()-d.t<10000)fresh[d.id]=d;} // 10s timeout
-          }catch(e){}
-        }
-        mpDataRef.current=fresh;
-      }
-    }catch(e){}
-  },[]);
-
-  // Start/stop multiplayer polling
-  const startMPPoll = useCallback(()=>{
-    if(mpPollRef.current)return;
-    mpPollRef.current=setInterval(pollMultiplayer,500);
-  },[pollMultiplayer]);
-  const stopMPPoll = useCallback(()=>{
-    if(mpPollRef.current){clearInterval(mpPollRef.current);mpPollRef.current=null;}
-  },[]);
-  useEffect(()=>()=>stopMPPoll(),[stopMPPoll]);
-
-  // ── RENDER 2D CANVAS ───────────────────────────────────────────────
-  const renderCanvas = useCallback((draws,turtle)=>{
-    const cv=canvasRef.current;if(!cv)return;
-    const ctx=cv.getContext("2d");
-    ctx.clearRect(0,0,400,400);ctx.fillStyle="#08080f";ctx.fillRect(0,0,400,400);
-    ctx.strokeStyle="#ffffff06";ctx.lineWidth=0.5;
-    for(let x=0;x<400;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,400);ctx.stroke();}
-    for(let y=0;y<400;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(400,y);ctx.stroke();}
-    for(const d of draws){
-      if(d.t==="f"){ctx.fillStyle=d.c;ctx.fillRect(0,0,400,400);continue;}
-      ctx.fillStyle=d.c||"#fff";ctx.strokeStyle=d.c||"#fff";
-      if(d.t==="c"){ctx.beginPath();ctx.arc(d.x,d.y,Math.max(0.5,d.r),0,Math.PI*2);ctx.fill();}
-      else if(d.t==="l"){ctx.lineWidth=d.w||2;ctx.beginPath();ctx.moveTo(d.x1,d.y1);ctx.lineTo(d.x2,d.y2);ctx.stroke();}
-      else if(d.t==="r"){ctx.fillRect(d.x,d.y,d.w,d.h);}
-      else if(d.t==="tx"){ctx.font=`${d.s||16}px 'Outfit',sans-serif`;ctx.fillText(d.txt,d.x,d.y);}
-    }
-    if(turtle&&turtle.vis){
-      const ta=turtle.a*Math.PI/180;ctx.save();ctx.translate(turtle.x,turtle.y);ctx.rotate(ta);
-      ctx.beginPath();ctx.moveTo(10,0);ctx.lineTo(-6,-6);ctx.lineTo(-3,0);ctx.lineTo(-6,6);ctx.closePath();
-      ctx.fillStyle="#f43f5ecc";ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=1;ctx.stroke();ctx.restore();
-    }
-  },[]);
-
-  // ── STOP ───────────────────────────────────────────────────────────
-  const stopAnim = useCallback(()=>{
-    if(animRef.current){cancelAnimationFrame(animRef.current);animRef.current=null;}
-    setIsAnim(false);setIs3D(false);setIsShader(false);stopMPPoll();
-    shaderCacheRef.current={src:null,prog:null};
-  },[stopMPPoll]);
+  // ── STOP ANIMATION ─────────────────────────────────────────────────
+  const stopAnim = useCallback(() => {
+    if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null; }
+    stateRef.current = null;
+    setIsAnim(false);
+  }, []);
 
   // ── RUN CODE ───────────────────────────────────────────────────────
-  const runCode = useCallback(()=>{
+  const runCode = useCallback(() => {
     stopAnim();
-    const js=compileGerman(code);
-    const output=[],errors=[],draws=[];
-    if(!audioRef.current){try{audioRef.current=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+    const js = compileGerman(code);
+    const output = [], errors = [], draws = [];
 
-    const camCtrl={start:()=>startCamera(),stop:()=>{camRef.current.active=false;setCamActive(false);}};
-    const storageAPI=window.storage||null;
+    // Init audio
+    if (!audioRef.current) {
+      try { audioRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+    }
 
-    try{
-      const allRT=`${RUNTIME}
-${TURTLE_RT}
-${SOUND_RT}
-${PHYSICS_RT}
-${PARTICLE_RT}
-${GAME_RT}
-${CAMERA_RT}
-${KI_RT}
-${THREE_RT}
-${MULTI_RT}
-${SHADER_RT}
-`;
-      const hasAnim=/^funktion zeichne\(\)\s*:/m.test(code);
-      const has3D=/szene_3d|würfel_3d|kugel_3d|zylinder_3d|ebene_3d/.test(code);
-      const hasCam=/kamera_starten/.test(code);
-      const hasShader=/shader\s*\(/.test(code);
-      const hasMP=/mehrspieler_/.test(code);
+    try {
+      // Check if code has animation function (zeichne)
+      const hasAnim = /^funktion zeichne\(\)\s*:/m.test(code);
 
-      if(hasCam)startCamera();
-      if(hasMP)startMPPoll();
+      const fullCode = `${RUNTIME}\n${TURTLE_RT}\n${SOUND_RT}\n${js}\nreturn {zeichneFn: typeof zeichne==='function'?zeichne:null, turtle:__turtle, state: typeof __state!=='undefined'?__state:null};`;
+      const fn = new Function("__out", "__err", "__d", "__audioCtx", "rahmen", "maus_x", "maus_y", "maus_gedrückt", fullCode);
+      const result = fn(output, errors, draws, audioRef.current, 0,
+        mouseRef.current.x, mouseRef.current.y, mouseRef.current.down);
 
-      if(hasAnim){
-        const scopedCode=`${allRT}
+      if (result.zeichneFn && !errors.length) {
+        // Animation mode!
+        setIsAnim(true);
+        let frame = 0;
+        // We need to re-run the SETUP code once to create closures, then call zeichne repeatedly
+        // Better approach: create a persistent scope
+        const setupCode = `${RUNTIME}\n${TURTLE_RT}\n${SOUND_RT}\n${js}\nreturn {zeichne: typeof zeichne==='function'?zeichne:null, turtle:__turtle, getDraws:()=>{const r=[...__d];__d.length=0;return r}};`;
+        const setupFn = new Function("__out", "__err", "__d", "__audioCtx", "rahmen", "maus_x", "maus_y", "maus_gedrückt", setupCode);
+        // We need mutable scope... use object
+        const scope = {out:[],err:[],d:[],frame:0};
+        const scopedCode = `${RUNTIME}\n${TURTLE_RT}\n${SOUND_RT}\n
 let rahmen=0,maus_x=0,maus_y=0,maus_gedrückt=false;
 ${js}
 return{zeichne:typeof zeichne==='function'?zeichne:null,
   setMouse(x,y,d){maus_x=x;maus_y=y;maus_gedrückt=d},
   setFrame(f){rahmen=f},
-  setCam(x,y,m){kamera_x=x;kamera_y=y;kamera_bewegung=m;kamera_aktiv=true;},
-  setMP(d){__mp_alle=d;},
   getDraws(){const r=[...__d];__d.length=0;return r},
-  get3D(){const r={cmds:[...__d3],cam:{...__3d_cam},rot:{...__3d_rot},bg:__3d_bg,mode:__3d_mode};__d3.length=0;return r},
-  getShader(){return{mode:__shader_mode,code:__shader_code,uniforms:{...__shader_uniforms}}},
   getTurtle(){return __turtle}};`;
-        const scopedFn=new Function("__out","__err","__d","__d3","__audioCtx","__keys","__cam","__storage",scopedCode);
-        const scope={out:[],err:[],d:[],d3:[]};
-        const ctx=scopedFn(scope.out,scope.err,scope.d,scope.d3,audioRef.current,keysRef.current,camCtrl,storageAPI);
-        if(ctx.zeichne){
-          setIsAnim(true);if(has3D)setIs3D(true);if(hasShader)setIsShader(true);let frame=0;
-          const animate=()=>{
-            scope.out.length=0;
-            processCamera();
-            ctx.setMouse(mouseRef.current.x,mouseRef.current.y,mouseRef.current.down);
+        const scopedFn = new Function("__out","__err","__d","__audioCtx", scopedCode);
+        const ctx = scopedFn(scope.out, scope.err, scope.d, audioRef.current);
+
+        if (ctx.zeichne) {
+          const animate = () => {
+            scope.out.length = 0;
+            ctx.setMouse(mouseRef.current.x, mouseRef.current.y, mouseRef.current.down);
             ctx.setFrame(frame);
-            ctx.setCam(camRef.current.x,camRef.current.y,camRef.current.motion);
-            ctx.setMP(mpDataRef.current);
-            try{ctx.zeichne();}catch(e){setConsoleOut([{ty:"err",t:"⚠ "+tErr(e.message)}]);stopAnim();return;}
-            const info3d=ctx.get3D();
-            const shInfo=ctx.getShader();
-            const draws2d=ctx.getDraws(); // Always consume to prevent memory leak
-            if(shInfo.mode){renderShader(shInfo.code,frame/60);}
-            else if(info3d.mode){render3D(info3d.cmds,info3d.cam,info3d.rot);}
-            else{renderCanvas(draws2d,ctx.getTurtle());}
-            frame++;animRef.current=requestAnimationFrame(animate);
+            try { ctx.zeichne(); } catch(e) { setConsoleOut([{ty:"err",t:"⚠ "+tErr(e.message)}]); stopAnim(); return; }
+            const dr = ctx.getDraws();
+            renderCanvas(dr, ctx.getTurtle());
+            frame++;
+            animRef.current = requestAnimationFrame(animate);
           };
-          animRef.current=requestAnimationFrame(animate);
-          const features=[];if(has3D)features.push("3D");if(hasCam)features.push("Kamera");if(hasMP)features.push("Multi");if(hasShader)features.push("Shader");
-          setConsoleOut([{ty:"sys",t:`🔄 Animation läuft... ${features.length?`[${features.join("+")}]`:""} (${code.split("
-").length} Zeilen)`}]);
+          animRef.current = requestAnimationFrame(animate);
+          setConsoleOut([{ty:"sys",t:"🔄 Animation läuft... ("+code.split("\n").length+" Zeilen)"}]);
         }
-      }else{
-        const fullCode=`${allRT}
-const __d3=[];
-${js}
-return{turtle:__turtle,d3:__d3,mode3d:__3d_mode,cam3d:__3d_cam,rot3d:__3d_rot,bg3d:__3d_bg,shader_mode:__shader_mode,shader_code:__shader_code};`;
-        const fn=new Function("__out","__err","__d","__audioCtx","__keys","__cam","__storage","rahmen","maus_x","maus_y","maus_gedrückt",fullCode);
-        const result=fn(output,errors,draws,audioRef.current,keysRef.current,camCtrl,storageAPI,0,mouseRef.current.x,mouseRef.current.y,mouseRef.current.down);
-
-        if(result.shader_mode){setIsShader(true);renderShader(result.shader_code,0);}
-        else if(result.mode3d){setIs3D(true);render3D(result.d3,result.cam3d,result.rot3d);}
-        else{renderCanvas(draws,result.turtle);}
-
-        const lines=output.map(o=>({ty:"out",t:String(o)}));
+      } else {
+        // Static render
+        const lines = output.map(o=>({ty:"out",t:String(o)}));
         errors.forEach(e=>lines.push({ty:"err",t:"⚠ "+tErr(e)}));
-        if(!lines.length)lines.push({ty:"sys",t:"✓ "+(result.shader_mode?"Shader aktiv":result.mode3d?result.d3.length+" 3D-Objekte":draws.length+" Zeichenbefehle")});
+        if (!lines.length) lines.push({ty:"sys",t:"✓ "+draws.length+" Zeichenbefehle"});
         setConsoleOut(lines);
-
-        if(showDebug){
-          const vars={};
-          const vm=code.matchAll(/^(\s*)([\wäöüÄÖÜß]+)\s*=\s*(.+)$/gm);
-          for(const m of vm){if(!["funktion","für","wenn","solange","sonst","klasse"].includes(m[2]))vars[m[2]]=m[3].trim();}
-          setDebugVars(vars);
-        }
+        renderCanvas(draws, result.turtle);
       }
-    }catch(e){setConsoleOut([{ty:"err",t:"⚠ "+tErr(e.message)}]);renderCanvas([],null);}
-  },[code,stopAnim,renderCanvas,render3D,renderShader,showDebug,startCamera,processCamera,startMPPoll]);
+    } catch(e) {
+      setConsoleOut([{ty:"err",t:"⚠ "+tErr(e.message)}]);
+      renderCanvas([], null);
+    }
+  }, [code, stopAnim, renderCanvas]);
 
-  // Auto-run
-  useEffect(()=>{
-    if(/^funktion zeichne\(\)\s*:/m.test(code)){setConsoleOut([{ty:"sys",t:"🔄 Animation erkannt — drücke ▶ Ausführen"}]);return;}
-    stopAnim();runCode();
-  },[code]);
-  useEffect(()=>{if(consoleRef.current)consoleRef.current.scrollTop=consoleRef.current.scrollHeight;},[consoleOut]);
-  useEffect(()=>{const h=e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();runCode()}};
-    window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h);},[runCode]);
+  // Run on code change (only for non-animation code)
+  useEffect(() => {
+    if (/^funktion zeichne\(\)\s*:/m.test(code)) {
+      // Don't auto-run animations
+      setConsoleOut([{ty:"sys",t:"🔄 Animation erkannt — drücke ▶ Ausführen"}]);
+      return;
+    }
+    stopAnim();
+    runCode();
+  }, [code]);
+
+  useEffect(() => {
+    if (consoleRef.current) consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
+  }, [consoleOut]);
+
+  useEffect(() => {
+    const h = e => { if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();runCode()}};
+    window.addEventListener("keydown",h); return()=>window.removeEventListener("keydown",h);
+  }, [runCode]);
 
   // ── VOICE ──────────────────────────────────────────────────────────
-  const startVoice=async()=>{setTranscript("");setInterim("");try{recRef.current?.start();setListening(true);}catch(e){}
-    try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});const actx=new(window.AudioContext||window.webkitAudioContext)();
-      const src=actx.createMediaStreamSource(stream);const an=actx.createAnalyser();an.fftSize=256;src.connect(an);
-      const cv=waveRef.current;if(!cv)return;const ctx=cv.getContext("2d");const W=cv.width,H=cv.height;const buf=new Uint8Array(an.frequencyBinCount);
-      const draw=()=>{waveAnimRef.current=requestAnimationFrame(draw);an.getByteFrequencyData(buf);ctx.clearRect(0,0,W,H);
-        for(let i=0;i<64;i++){const v=buf[i]/255;const h=v*H*.9;ctx.fillStyle=`hsla(${v*30},85%,${50+v*20}%,${.5+v*.5})`;
-          ctx.fillRect(i*(W/64)+1,H-h,W/64-2,h);}};draw();}catch(e){}};
-  const stopVoice=()=>{setListening(false);try{recRef.current?.stop();}catch(e){}if(waveAnimRef.current)cancelAnimationFrame(waveAnimRef.current);};
+  const startVoice = async () => {
+    setTranscript(""); setInterim("");
+    try { recRef.current?.start(); setListening(true); } catch(e) {}
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      const actx = new (window.AudioContext||window.webkitAudioContext)();
+      const src = actx.createMediaStreamSource(stream);
+      const an = actx.createAnalyser(); an.fftSize = 256;
+      src.connect(an); analyserRef.current = an;
+      const cv = waveRef.current; if(!cv)return;
+      const ctx = cv.getContext("2d"); const W=cv.width, H=cv.height;
+      const buf = new Uint8Array(an.frequencyBinCount);
+      const draw = () => {
+        waveAnimRef.current = requestAnimationFrame(draw);
+        an.getByteFrequencyData(buf); ctx.clearRect(0,0,W,H);
+        for(let i=0;i<64;i++){const v=buf[i]/255;const h=v*H*.9;
+          ctx.fillStyle=`hsla(${v*30},85%,${50+v*20}%,${.5+v*.5})`;
+          ctx.fillRect(i*(W/64)+1,H-h,W/64-2,h);}
+      }; draw();
+    } catch(e) {}
+  };
+  const stopVoice = () => {
+    setListening(false);
+    try{recRef.current?.stop()}catch(e){}
+    if(waveAnimRef.current)cancelAnimationFrame(waveAnimRef.current);
+  };
 
   // ── AI ─────────────────────────────────────────────────────────────
-  const sendToAI=async(prompt)=>{if(!prompt.trim()||aiLoading)return;setAiLoading(true);setAiInput("");
-    try{const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,system:AI_SYS,messages:[{role:"user",content:prompt}]})});
-      const data=await resp.json();const text=data.content?.map(c=>c.text||"").join("
-").trim()||"";
-      const clean=text.replace(/^```[\w]*
-?/,"").replace(/
-?```$/,"").trim();
-      if(clean){setCode(clean);setShowAI(false);}}catch(e){}setAiLoading(false);};
-
-  const askTutor=async(q)=>{if(!q.trim()||tutorLoading)return;setTutorLoading(true);setTutorQ("");
-    try{const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:600,system:TUTOR_SYS,
-        messages:[{role:"user",content:`Code:
-\`\`\`
-${code}
-\`\`\`
-
-Frage: ${q}`}]})});
-      const data=await resp.json();setTutorA(data.content?.map(c=>c.text||"").join("
-").trim()||"");}
-    catch(e){setTutorA("Verbindungsfehler.")}setTutorLoading(false);};
-
-  const sidePanel=showPy?"py":showDebug?"debug":showTutor?"tutor":null;
-  const togglePanel=p=>{setShowPy(p==="py"?!showPy:false);setShowDebug(p==="debug"?!showDebug:false);setShowTutor(p==="tutor"?!showTutor:false);};
-  const modeLabel=isShader?"🌐 SHADER":is3D?"🧊 3D":(/taste\(/.test(code)&&isAnim)?"🎮 GAME":camActive?"🖐️ CAM":(/mehrspieler_/.test(code)&&isAnim)?"👥 MULTI":isAnim?"🔄 LIVE":"● Bereit";
+  const sendToAI = async (prompt) => {
+    if(!prompt.trim()||aiLoading)return;
+    setAiLoading(true); setAiInput("");
+    try{
+      const resp=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1200,
+          system:AI_SYS,messages:[{role:"user",content:prompt}]})});
+      const data=await resp.json();
+      const text=data.content?.map(c=>c.text||"").join("\n").trim()||"";
+      const clean=text.replace(/^```[\w]*\n?/,"").replace(/\n?```$/,"").trim();
+      if(clean){setCode(clean);setShowAI(false);}
+    }catch(e){}
+    setAiLoading(false);
+  };
 
   // ══════════════════════════════════════════════════════════════════
-  const Btn=({onClick,active,color,children,title})=>(
-    <button onClick={onClick} title={title} style={{padding:"4px 10px",borderRadius:14,
-      border:`1px solid ${color||C.DM}${active?"60":"22"}`,
-      background:active?`${color||C.DM}15`:"transparent",
-      color:color||C.DM,cursor:"pointer",fontFamily:"'Outfit'",
-      fontSize:10,fontWeight:600,whiteSpace:"nowrap",transition:"all .15s"}}>{children}</button>);
-
-  return(
+  return (
     <div style={{height:"100vh",display:"flex",flexDirection:"column",background:C.BG,
       color:C.TX,fontFamily:"'Fira Code',monospace",overflow:"hidden"}}>
       <style>{`
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Fira+Code:wght@400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:${C.BD};border-radius:3px}
-textarea:focus,input:focus{outline:none}::selection{background:${C.R}30}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:${C.BD};border-radius:3px}
+textarea:focus,input:focus{outline:none}
+::selection{background:${C.R}30}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes breathe{0%,100%{box-shadow:0 0 0 0 ${C.R}40}50%{box-shadow:0 0 20px 4px ${C.R}10}}
+@keyframes breathe{0%,100%{box-shadow:0 0 0 0 ${C.R}40}50%{box-shadow:0 0 30px 6px ${C.R}15}}
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-@keyframes glow3d{0%,100%{box-shadow:0 0 15px ${C.B}15}50%{box-shadow:0 0 30px ${C.B}25}}
-@keyframes glowShader{0%,100%{box-shadow:0 0 15px ${C.P}15}50%{box-shadow:0 0 30px ${C.P}25}}
       `}</style>
 
       {/* HEADER */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
-        padding:"0 12px",height:40,flexShrink:0,borderBottom:`1px solid ${C.BD}40`,
+        padding:"0 16px",height:42,flexShrink:0,borderBottom:`1px solid ${C.BD}50`,
         background:`linear-gradient(180deg,${C.S2}ee,${C.BG})`}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{fontFamily:"'Outfit'",fontWeight:900,fontSize:14,display:"flex",alignItems:"center",gap:5}}>
-            <span style={{fontSize:16}}>🦢</span>
-            <span style={{background:`linear-gradient(135deg,${C.R},${C.O})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>BLACK SWAN</span>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div style={{fontFamily:"'Outfit'",fontWeight:900,fontSize:15,display:"flex",
+            alignItems:"center",gap:6}}>
+            <span style={{fontSize:18}}>🦢</span>
+            <span style={{background:`linear-gradient(135deg,${C.R},${C.O})`,
+              WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>BLACK SWAN</span>
           </div>
-          <div style={{fontSize:7,color:C.DM,fontFamily:"'Outfit'",padding:"2px 6px",borderRadius:6,border:`1px solid ${C.DM}25`,letterSpacing:1}}>OMEGA v16</div>
+          <div style={{fontSize:9,color:C.DM,fontFamily:"'Outfit'"}}>Megabuild</div>
         </div>
-        <div style={{display:"flex",gap:3,alignItems:"center",flexWrap:"wrap"}}>
-          <button onClick={isAnim?stopAnim:runCode} style={{padding:"4px 12px",borderRadius:14,border:"none",
+        <div style={{display:"flex",gap:5}}>
+          <button onClick={runCode} style={{padding:"4px 14px",borderRadius:16,border:"none",
             cursor:"pointer",background:isAnim?C.R:`linear-gradient(135deg,${C.T},${C.B})`,
-            color:"#fff",fontFamily:"'Outfit'",fontSize:10,fontWeight:700}}>{isAnim?"⏹ Stopp":"▶ Ausführen"}</button>
-          {voiceOK&&<Btn onClick={()=>{setShowVoice(true);startVoice()}} color={C.O}>🎤</Btn>}
-          <Btn onClick={()=>setShowAI(true)} color={C.P}>🤖 KI</Btn>
-          <div style={{width:1,height:14,background:C.BD+"40",margin:"0 1px"}}/>
-          <Btn onClick={()=>togglePanel("py")} active={showPy} color={C.B}>🐍</Btn>
-          <Btn onClick={()=>togglePanel("debug")} active={showDebug} color={C.Y}>🔄</Btn>
-          <Btn onClick={()=>togglePanel("tutor")} active={showTutor} color={C.T}>🧠</Btn>
-          <Btn onClick={()=>{const cv=isShader?shaderRef.current:is3D?canvas3DRef.current:canvasRef.current;
-            if(!cv)return;const a=document.createElement("a");a.download="black-swan.png";a.href=cv.toDataURL();a.click();}} color={C.DM} title="Canvas speichern">💾</Btn>
+            color:"#fff",fontFamily:"'Outfit'",fontSize:11,fontWeight:700}}>
+            {isAnim?"⏹ Stopp":"▶ Ausführen"}</button>
+          {voiceOK&&<button onClick={()=>{setShowVoice(true);startVoice()}} style={{
+            padding:"4px 14px",borderRadius:16,border:`1px solid ${C.O}30`,
+            background:"transparent",color:C.O,cursor:"pointer",fontFamily:"'Outfit'",
+            fontSize:11,fontWeight:600}}>🎤</button>}
+          <button onClick={()=>setShowAI(true)} style={{padding:"4px 14px",borderRadius:16,
+            border:`1px solid ${C.P}30`,background:"transparent",color:C.P,
+            cursor:"pointer",fontFamily:"'Outfit'",fontSize:11,fontWeight:600}}>🤖 KI</button>
+          <button onClick={()=>setShowPy(!showPy)} style={{padding:"4px 14px",borderRadius:16,
+            border:`1px solid ${C.B}30`,background:showPy?C.B+"15":"transparent",
+            color:C.B,cursor:"pointer",fontFamily:"'Outfit'",fontSize:11,fontWeight:600}}>🐍</button>
+          <button onClick={()=>{const cv=canvasRef.current;if(!cv)return;const a=document.createElement("a");
+            a.download="black-swan.png";a.href=cv.toDataURL();a.click()}} style={{
+            padding:"4px 14px",borderRadius:16,border:`1px solid ${C.DM}30`,background:"transparent",
+            color:C.DM,cursor:"pointer",fontFamily:"'Outfit'",fontSize:11,fontWeight:600}}>💾</button>
         </div>
       </div>
 
       {/* MAIN */}
       <div style={{flex:1,display:"flex",overflow:"hidden"}}>
         {/* Gallery */}
-        <div style={{width:46,background:C.S1,borderRight:`1px solid ${C.BD}30`,
-          display:"flex",flexDirection:"column",alignItems:"center",padding:"4px 0",gap:2,overflowY:"auto",flexShrink:0}}>
+        <div style={{width:52,background:C.S1,borderRight:`1px solid ${C.BD}30`,
+          display:"flex",flexDirection:"column",alignItems:"center",padding:"6px 0",
+          gap:3,overflowY:"auto",flexShrink:0}}>
           {GALLERY.map((g,i)=>(
-            <button key={i} onClick={()=>{setActiveG(i);stopAnim();setCode(g.c)}} title={g.t+" — "+g.d}
-              style={{width:34,height:34,borderRadius:6,fontSize:13,
-                border:`1px solid ${activeG===i?C.R+"50":C.BD+"20"}`,
-                background:activeG===i?C.R+"15":"transparent",cursor:"pointer",
-                display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>{g.t.split(" ")[0]}</button>
+            <button key={i} onClick={()=>{setActiveG(i);stopAnim();setCode(g.c)}} title={g.t}
+              style={{width:38,height:38,borderRadius:8,fontSize:15,
+                border:`1px solid ${activeG===i?C.R+"50":C.BD+"30"}`,
+                background:activeG===i?C.R+"15":C.S2,cursor:"pointer",
+                display:"flex",alignItems:"center",justifyContent:"center"}}>{g.t.split(" ")[0]}</button>
           ))}
         </div>
 
         {/* Editor */}
-        <div style={{width:sidePanel?280:360,display:"flex",flexDirection:"column",
-          borderRight:`1px solid ${C.BD}30`,flexShrink:0,transition:"width .2s",minWidth:220}}>
+        <div style={{width:showPy?320:400,display:"flex",flexDirection:"column",
+          borderRight:`1px solid ${C.BD}30`,flexShrink:0,transition:"width .3s"}}>
           <div style={{flex:1,position:"relative",overflow:"hidden"}}>
-            <pre style={{position:"absolute",inset:0,margin:0,padding:"8px 10px",fontSize:11,
+            <pre style={{position:"absolute",inset:0,margin:0,padding:"10px 12px",fontSize:12,
               lineHeight:1.7,fontFamily:"inherit",overflow:"auto",pointerEvents:"none",
               whiteSpace:"pre-wrap",wordBreak:"break-all",background:"transparent",zIndex:1}}
               dangerouslySetInnerHTML={{__html:hlDE(code)}} />
             <textarea value={code} onChange={e=>{stopAnim();setCode(e.target.value)}}
               spellCheck={false} style={{position:"absolute",inset:0,width:"100%",height:"100%",
-                padding:"8px 10px",fontSize:11,lineHeight:1.7,fontFamily:"inherit",
+                padding:"10px 12px",fontSize:12,lineHeight:1.7,fontFamily:"inherit",
                 background:C.BG,color:"transparent",caretColor:C.R,border:"none",
                 resize:"none",whiteSpace:"pre-wrap",wordBreak:"break-all",zIndex:2}} />
           </div>
-          <div style={{height:75,borderTop:`1px solid ${C.BD}30`,flexShrink:0}}>
-            <div ref={consoleRef} style={{height:"100%",overflow:"auto",padding:"5px 10px",
-              background:`${C.S1}80`,fontSize:9,lineHeight:1.5}}>
+          <div style={{height:90,borderTop:`1px solid ${C.BD}30`,flexShrink:0}}>
+            <div ref={consoleRef} style={{height:"100%",overflow:"auto",padding:"6px 12px",
+              background:`${C.S1}80`,fontSize:10,lineHeight:1.5}}>
               {consoleOut.map((l,i)=>(
                 <div key={i} style={{color:l.ty==="err"?C.R:l.ty==="sys"?C.DM:C.T,
-                  animation:`fadeUp .1s ease ${i*.01}s both`}}>{l.t}</div>))}
+                  animation:`fadeUp .12s ease ${i*.015}s both`}}>{l.t}</div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* SIDE PANEL */}
-        {sidePanel&&(
-          <div style={{width:220,borderRight:`1px solid ${C.BD}30`,flexShrink:0,
-            animation:"fadeIn .15s ease",display:"flex",flexDirection:"column",overflow:"hidden"}}>
-            {showPy&&(<>
-              <div style={{padding:"4px 10px",fontSize:7,letterSpacing:2,color:C.B,fontFamily:"'Outfit'",fontWeight:700,borderBottom:`1px solid ${C.BD}30`}}>🐍 PYTHON</div>
-              <pre style={{flex:1,margin:0,padding:"8px 10px",fontSize:10,lineHeight:1.7,fontFamily:"inherit",overflow:"auto",whiteSpace:"pre-wrap",background:C.BG,color:C.DM}}>{deToEn(code)}</pre>
-            </>)}
-            {showDebug&&(<>
-              <div style={{padding:"4px 10px",fontSize:7,letterSpacing:2,color:C.Y,fontFamily:"'Outfit'",fontWeight:700,borderBottom:`1px solid ${C.BD}30`}}>🔄 VARIABLEN</div>
-              <div style={{flex:1,overflow:"auto",padding:"6px 8px",fontSize:9.5}}>
-                {Object.keys(debugVars).length===0?
-                  <div style={{color:C.DM,fontFamily:"'Outfit'",fontSize:10,padding:6}}>Führe Code aus um Variablen zu sehen.</div>:
-                  Object.entries(debugVars).map(([k,v],i)=>(
-                    <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"3px 5px",borderRadius:4,marginBottom:1,background:i%2===0?C.S1+"80":"transparent"}}>
-                      <span style={{color:C.Y}}>{k}</span><span style={{color:C.T,maxWidth:100,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v}</span>
-                    </div>))}
-                <div style={{marginTop:10,padding:"5px 7px",borderRadius:5,background:C.S1,border:`1px solid ${C.BD}30`,fontSize:8,color:C.DM}}>
-                  <div style={{fontFamily:"'Outfit'",fontWeight:600,marginBottom:3}}>v16 OMEGA APIs:</div>
-                  <div>👥 mehrspieler_senden/lesen</div>
-                  <div>🌐 shader · shader_wert</div>
-                  <div>🧊 szene_3d · würfel_3d · kugel_3d</div>
-                  <div>🖐️ kamera_starten · kamera_x/y</div>
-                  <div>🧠 ki_erstellen · ki_lernen</div>
-                  <div>⚛️ schwerkraft · körper · kraft</div>
-                  <div>🎭 partikel_explosion</div>
-                  <div>🎮 taste · spielobjekt · bewege</div>
-                </div>
-              </div>
-            </>)}
-            {showTutor&&(<>
-              <div style={{padding:"4px 10px",fontSize:7,letterSpacing:2,color:C.T,fontFamily:"'Outfit'",fontWeight:700,borderBottom:`1px solid ${C.BD}30`}}>🧠 KI-TUTOR</div>
-              <div style={{flex:1,overflow:"auto",padding:"6px 8px",display:"flex",flexDirection:"column",gap:6}}>
-                <div style={{display:"flex",flexWrap:"wrap",gap:2}}>
-                  {["Was macht das?","Verbesserungen?","Zeile für Zeile","Fehler?"].map(q=>(
-                    <button key={q} onClick={()=>askTutor(q)} style={{padding:"2px 7px",borderRadius:5,border:`1px solid ${C.BD}`,background:C.S1,color:C.TX,cursor:"pointer",fontSize:8,fontFamily:"'Outfit'"}}>{q}</button>))}
-                </div>
-                <div style={{display:"flex",gap:3}}>
-                  <input value={tutorQ} onChange={e=>setTutorQ(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")askTutor(tutorQ)}}
-                    placeholder="Frage..." style={{flex:1,padding:"5px 7px",borderRadius:5,border:`1px solid ${C.BD}`,background:C.S1,color:C.TX,fontSize:9.5,fontFamily:"'Outfit'"}} />
-                  <button onClick={()=>askTutor(tutorQ)} style={{padding:"5px 8px",borderRadius:5,border:"none",cursor:"pointer",background:C.T,color:"#000",fontSize:9,fontWeight:700}}>
-                    {tutorLoading?"⏳":"→"}</button>
-                </div>
-                {tutorA&&<div style={{padding:"7px 8px",borderRadius:5,background:C.S1,border:`1px solid ${C.T}20`,fontSize:10,lineHeight:1.6,fontFamily:"'Outfit'",color:C.TX,animation:"fadeUp .2s ease"}}>{tutorA}</div>}
-                {!tutorA&&!tutorLoading&&<div style={{color:C.DM,fontFamily:"'Outfit'",fontSize:9.5,padding:4}}>Frage den KI-Tutor! 🇩🇪</div>}
-              </div>
-            </>)}
+        {/* Python */}
+        {showPy&&(
+          <div style={{width:280,borderRight:`1px solid ${C.BD}30`,flexShrink:0,
+            animation:"fadeIn .2s ease"}}>
+            <div style={{padding:"5px 10px",fontSize:8,letterSpacing:2,color:C.B,
+              fontFamily:"'Outfit'",fontWeight:700,borderBottom:`1px solid ${C.BD}30`}}>
+              🐍 PYTHON</div>
+            <pre style={{flex:1,margin:0,padding:"10px 12px",fontSize:11,lineHeight:1.7,
+              fontFamily:"inherit",overflow:"auto",whiteSpace:"pre-wrap",
+              background:C.BG,color:C.DM,height:"calc(100% - 28px)"}}>{deToEn(code)}</pre>
           </div>
         )}
 
-        {/* CANVAS AREA */}
+        {/* CANVAS */}
         <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",
           background:`radial-gradient(ellipse at center,${C.S2},${C.BG})`,position:"relative"}}>
-          <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 1px 1px, ${C.BD}15 1px, transparent 0)`,backgroundSize:"40px 40px"}} />
-          {/* Canvas wrapper — contains all canvases + mouse overlay */}
-          <div style={{position:"relative",width:400,height:400,maxWidth:"100%",maxHeight:"calc(100vh - 80px)",zIndex:1}}>
-            {/* 2D Canvas */}
-            <canvas ref={canvasRef} width={400} height={400} style={{
-              borderRadius:8,border:`1px solid ${C.BD}40`,width:"100%",height:"100%",
-              boxShadow:`0 0 40px ${C.R}04`,
-              display:(is3D||isShader)?"none":"block"}} />
-            {/* 3D Canvas */}
-            <canvas ref={canvas3DRef} width={400} height={400} style={{
-              borderRadius:8,border:`1px solid ${C.B}40`,width:"100%",height:"100%",
-              boxShadow:`0 0 40px ${C.B}08`,
-              display:is3D&&!isShader?"block":"none",
-              animation:is3D?"glow3d 3s ease infinite":"none"}} />
-            {/* Shader Canvas (WebGL) */}
-            <canvas ref={shaderRef} width={400} height={400} style={{
-              borderRadius:8,border:`1px solid ${C.P}40`,width:"100%",height:"100%",
-              boxShadow:`0 0 40px ${C.P}08`,
-              display:isShader?"block":"none",
-              animation:isShader?"glowShader 3s ease infinite":"none"}} />
-            {/* Mouse/Touch overlay — captures events for ALL canvas modes */}
-            <div ref={mouseOverlayRef} style={{position:"absolute",inset:0,zIndex:3,cursor:"crosshair",borderRadius:8}} />
-          </div>
-          {/* Mode badge */}
-          {isAnim&&<div style={{position:"absolute",top:8,right:12,
-            padding:"3px 10px",borderRadius:10,
-            background:isShader?`${C.P}20`:is3D?`${C.B}20`:`${C.R}20`,
-            border:`1px solid ${isShader?C.P:is3D?C.B:C.R}25`,fontSize:8,
-            color:isShader?C.P:is3D?C.B:C.R,fontFamily:"'Outfit'",fontWeight:700,zIndex:2,
-            animation:"breathe 2s ease infinite",letterSpacing:1}}>{modeLabel}</div>}
-          {/* Cam indicator */}
-          {camActive&&<div style={{position:"absolute",top:8,left:12,
-            padding:"3px 8px",borderRadius:8,background:`${C.O}20`,border:`1px solid ${C.O}25`,
-            fontSize:8,color:C.O,fontFamily:"'Outfit'",fontWeight:700,zIndex:2,
-            animation:"pulse 1.5s infinite"}}>📷 Kamera aktiv</div>}
-          {/* Game hint */}
-          {isAnim&&/taste\(/.test(code)&&!is3D&&(
-            <div style={{position:"absolute",bottom:8,right:12,padding:"3px 8px",borderRadius:8,
-              background:`${C.S1}cc`,border:`1px solid ${C.BD}40`,fontSize:7,color:C.DM,fontFamily:"'Outfit'",zIndex:2}}>⌨️ Pfeiltasten</div>)}
+          <div style={{position:"absolute",inset:0,
+            backgroundImage:`radial-gradient(circle at 1px 1px, ${C.BD}20 1px, transparent 0)`,
+            backgroundSize:"40px 40px"}} />
+          <canvas ref={canvasRef} width={400} height={400} style={{
+            borderRadius:10,border:`1px solid ${C.BD}50`,cursor:"crosshair",
+            boxShadow:`0 0 50px ${C.R}06, 0 20px 50px #00000030`,
+            position:"relative",zIndex:1}} />
+          {isAnim&&<div style={{position:"absolute",top:10,right:14,
+            padding:"3px 10px",borderRadius:12,background:`${C.R}20`,
+            border:`1px solid ${C.R}30`,fontSize:9,color:C.R,
+            fontFamily:"'Outfit'",fontWeight:700,zIndex:2,
+            animation:"breathe 2s ease infinite"}}>🔄 LIVE</div>}
         </div>
       </div>
 
       {/* VOICE OVERLAY */}
       {showVoice&&(
-        <div style={{position:"absolute",inset:0,background:`${C.BG}f5`,backdropFilter:"blur(20px)",zIndex:100,
-          display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:14,animation:"fadeIn .2s ease"}}>
-          <button onClick={()=>{stopVoice();setShowVoice(false)}} style={{position:"absolute",top:12,right:12,width:28,height:28,borderRadius:"50%",border:`1px solid ${C.BD}`,background:C.S1,color:C.DM,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
-          <div style={{fontFamily:"'Outfit'",fontSize:22,fontWeight:900,background:`linear-gradient(135deg,${C.R},${C.O})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{listening?"Ich höre zu...":"Sprechen"}</div>
-          <canvas ref={waveRef} width={400} height={60} style={{borderRadius:8,border:`1px solid ${C.R}15`}} />
+        <div style={{position:"absolute",inset:0,background:`${C.BG}f5`,
+          backdropFilter:"blur(20px)",zIndex:100,display:"flex",flexDirection:"column",
+          alignItems:"center",justifyContent:"center",gap:16,animation:"fadeIn .25s ease"}}>
+          <button onClick={()=>{stopVoice();setShowVoice(false)}} style={{
+            position:"absolute",top:14,right:14,width:32,height:32,borderRadius:"50%",
+            border:`1px solid ${C.BD}`,background:C.S1,color:C.DM,cursor:"pointer",fontSize:14,
+            display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+          <div style={{fontFamily:"'Outfit'",fontSize:24,fontWeight:900,
+            background:`linear-gradient(135deg,${C.R},${C.O})`,
+            WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
+            {listening?"Ich höre zu...":"Sprechen"}</div>
+          <canvas ref={waveRef} width={400} height={80} style={{borderRadius:10,border:`1px solid ${C.R}15`}} />
           {(transcript||interim)&&(
-            <div style={{maxWidth:440,width:"100%",padding:"10px 14px",borderRadius:8,background:`${C.S1}cc`,border:`1px solid ${C.BD}`}}>
-              <div style={{fontSize:12,fontFamily:"'Outfit'",lineHeight:1.5}}>{transcript&&<span>{transcript} </span>}{interim&&<span style={{color:C.DM,fontStyle:"italic"}}>{interim}</span>}</div>
-              <div style={{marginTop:4,fontSize:10,color:C.O,fontFamily:"'Fira Code'"}}>→ {speechToCode(transcript||interim)}</div>
-            </div>)}
+            <div style={{maxWidth:500,width:"100%",padding:"14px 18px",borderRadius:10,
+              background:`${C.S1}cc`,border:`1px solid ${C.BD}`}}>
+              <div style={{fontSize:14,fontFamily:"'Outfit'",lineHeight:1.5}}>
+                {transcript&&<span>{transcript} </span>}
+                {interim&&<span style={{color:C.DM,fontStyle:"italic"}}>{interim}</span>}
+              </div>
+              <div style={{marginTop:6,fontSize:11,color:C.O,fontFamily:"'Fira Code'"}}>
+                → {speechToCode(transcript||interim)}</div>
+            </div>
+          )}
           <div style={{display:"flex",gap:8}}>
             {listening
-              ?<button onClick={stopVoice} style={{width:52,height:52,borderRadius:"50%",border:"none",cursor:"pointer",background:C.R,color:"#fff",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",animation:"breathe 1.5s ease infinite"}}>⏹</button>
-              :<button onClick={startVoice} style={{width:52,height:52,borderRadius:"50%",border:`2px solid ${C.R}40`,cursor:"pointer",background:C.S1,color:C.R,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>🎤</button>}
+              ? <button onClick={stopVoice} style={{width:60,height:60,borderRadius:"50%",
+                  border:"none",cursor:"pointer",background:C.R,color:"#fff",fontSize:20,
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  animation:"breathe 1.5s ease infinite"}}>⏹</button>
+              : <button onClick={startVoice} style={{width:60,height:60,borderRadius:"50%",
+                  border:`2px solid ${C.R}40`,cursor:"pointer",background:C.S1,color:C.R,
+                  fontSize:20,display:"flex",alignItems:"center",justifyContent:"center"}}>🎤</button>}
           </div>
           {transcript&&(
-            <div style={{display:"flex",gap:5}}>
-              <button onClick={()=>{const c=speechToCode(transcript);setCode(p=>p+(p&&!p.endsWith("
-")?"
-":"")+c);stopVoice();setShowVoice(false)}}
-                style={{padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",background:`linear-gradient(135deg,${C.O},${C.R})`,color:"#fff",fontFamily:"'Outfit'",fontSize:10,fontWeight:700}}>✍️ Einfügen</button>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>{const c=speechToCode(transcript);setCode(p=>p+(p&&!p.endsWith("\n")?"\n":"")+c);
+                stopVoice();setShowVoice(false)}} style={{padding:"8px 20px",borderRadius:8,
+                border:"none",cursor:"pointer",background:`linear-gradient(135deg,${C.O},${C.R})`,
+                color:"#fff",fontFamily:"'Outfit'",fontSize:12,fontWeight:700}}>✍️ Code einfügen</button>
               <button onClick={()=>{sendToAI(transcript);stopVoice();setShowVoice(false)}}
-                style={{padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",background:`linear-gradient(135deg,${C.P},${C.B})`,color:"#fff",fontFamily:"'Outfit'",fontSize:10,fontWeight:700}}>🤖 An KI</button>
-            </div>)}
-        </div>)}
+                style={{padding:"8px 20px",borderRadius:8,border:"none",cursor:"pointer",
+                  background:`linear-gradient(135deg,${C.P},${C.B})`,color:"#fff",
+                  fontFamily:"'Outfit'",fontSize:12,fontWeight:700}}>🤖 An KI</button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* AI OVERLAY */}
       {showAI&&(
-        <div style={{position:"absolute",inset:0,background:`${C.BG}f5`,backdropFilter:"blur(20px)",zIndex:100,
-          display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,animation:"fadeIn .2s ease"}}>
-          <button onClick={()=>setShowAI(false)} style={{position:"absolute",top:12,right:12,width:28,height:28,borderRadius:"50%",border:`1px solid ${C.BD}`,background:C.S1,color:C.DM,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
-          <div style={{fontSize:30}}>🦢</div>
-          <div style={{fontFamily:"'Outfit'",fontSize:18,fontWeight:900,background:`linear-gradient(135deg,${C.P},${C.B})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Was soll ich erschaffen?</div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:3,justifyContent:"center",maxWidth:500}}>
-            {["3D-Stadt mit Kugeln","Physik Bälle Demo","Partikel-Feuerwerk",
-              "Pong-Spiel","Kamera-Steuerung","KI die Farben lernt",
-              "Mehrspieler Cursor-Jagd","Plasma-Shader","Schildkröte Mandala","Planetensystem"].map(s=>(
-              <button key={s} onClick={()=>{setAiInput(s);sendToAI(s)}} style={{padding:"3px 9px",borderRadius:6,border:`1px solid ${C.BD}`,background:C.S1,color:C.TX,cursor:"pointer",fontSize:9.5,fontFamily:"'Outfit'"}}>{s}</button>))}
+        <div style={{position:"absolute",inset:0,background:`${C.BG}f5`,
+          backdropFilter:"blur(20px)",zIndex:100,display:"flex",flexDirection:"column",
+          alignItems:"center",justifyContent:"center",gap:14,animation:"fadeIn .25s ease"}}>
+          <button onClick={()=>setShowAI(false)} style={{
+            position:"absolute",top:14,right:14,width:32,height:32,borderRadius:"50%",
+            border:`1px solid ${C.BD}`,background:C.S1,color:C.DM,cursor:"pointer",fontSize:14,
+            display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+          <div style={{fontSize:36}}>🦢</div>
+          <div style={{fontFamily:"'Outfit'",fontSize:22,fontWeight:900,
+            background:`linear-gradient(135deg,${C.P},${C.B})`,
+            WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
+            Was soll ich erschaffen?</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:5,justifyContent:"center",maxWidth:480}}>
+            {["Zeichne eine Spiralgalaxie","Schildkröte zeichnet ein Haus",
+              "Interaktives Farbspiel mit Maus","Melodie mit Visualisierung",
+              "Fraktalbaum mit Rekursion","Planetensystem Animation"].map(s=>(
+              <button key={s} onClick={()=>{setAiInput(s);sendToAI(s)}} style={{
+                padding:"5px 12px",borderRadius:8,border:`1px solid ${C.BD}`,
+                background:C.S1,color:C.TX,cursor:"pointer",fontSize:11,
+                fontFamily:"'Outfit'"}}>{s}</button>))}
           </div>
-          <div style={{display:"flex",gap:4,width:"100%",maxWidth:460}}>
-            <input value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")sendToAI(aiInput)}}
-              placeholder="Beschreibe was du willst..." style={{flex:1,padding:"9px 12px",borderRadius:8,border:`1px solid ${C.BD}`,background:`${C.S1}cc`,color:C.TX,fontSize:11,fontFamily:"'Outfit'"}} />
+          <div style={{display:"flex",gap:6,width:"100%",maxWidth:480}}>
+            <input value={aiInput} onChange={e=>setAiInput(e.target.value)}
+              onKeyDown={e=>{if(e.key==="Enter")sendToAI(aiInput)}}
+              placeholder="Beschreibe was du willst..."
+              style={{flex:1,padding:"11px 14px",borderRadius:10,border:`1px solid ${C.BD}`,
+                background:`${C.S1}cc`,color:C.TX,fontSize:13,fontFamily:"'Outfit'"}} />
             <button onClick={()=>sendToAI(aiInput)} disabled={aiLoading}
-              style={{padding:"9px 16px",borderRadius:8,border:"none",cursor:"pointer",
+              style={{padding:"11px 20px",borderRadius:10,border:"none",cursor:"pointer",
                 background:aiInput.trim()?`linear-gradient(135deg,${C.P},${C.B})`:C.S1,
-                color:aiInput.trim()?"#fff":C.DM,fontFamily:"'Outfit'",fontSize:11,fontWeight:700}}>
+                color:aiInput.trim()?"#fff":C.DM,fontFamily:"'Outfit'",fontSize:13,fontWeight:700}}>
               {aiLoading?<span style={{animation:"spin .8s linear infinite",display:"inline-block"}}>⏳</span>:"→"}</button>
           </div>
-        </div>)}
+        </div>
+      )}
 
       {/* STATUS */}
-      <div style={{height:18,display:"flex",alignItems:"center",justifyContent:"space-between",
-        padding:"0 12px",borderTop:`1px solid ${C.BD}30`,background:`${C.S1}80`,fontSize:7.5,color:C.DM,flexShrink:0}}>
-        <div style={{display:"flex",gap:6,fontFamily:"'Outfit'"}}>
-          <span style={{fontWeight:700}}>BLACK SWAN OMEGA</span>
-          <span style={{color:isShader?C.P:is3D?C.B:isAnim?C.R:C.T}}>{modeLabel}</span>
-          {camActive&&<span style={{color:C.O}}>📷</span>}
+      <div style={{height:20,display:"flex",alignItems:"center",justifyContent:"space-between",
+        padding:"0 16px",borderTop:`1px solid ${C.BD}30`,background:`${C.S1}80`,
+        fontSize:9,color:C.DM,flexShrink:0}}>
+        <div style={{display:"flex",gap:8,fontFamily:"'Outfit'"}}>
+          <span style={{fontWeight:600}}>BLACK SWAN</span>
+          <span style={{color:isAnim?C.R:C.T}}>{isAnim?"● Animation":"● Live"}</span>
+          {listening&&<span style={{color:C.O}}>● Mikrofon</span>}
         </div>
-        <span style={{letterSpacing:0.3}}>👥Multi · 🌐Shader · 🧊3D · 🖐️Körper · 🧠KI · ⚛️Physik · 🎭Partikel · 🎮Game · 🐢Turtle · 🔊Sound · 📱Touch</span>
+        <span>🐢 Schildkröte · 🔄 Animation · 🖱 Maus · 🔊 Sound · 🤖 KI · 🎤 Voice</span>
       </div>
     </div>
   );
 }
 
-// ── RENDER ──────────────────────────────────────
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(BlackSwan));
+// ── RENDER ──
+try {
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(React.createElement(BlackSwan));
+} catch(e) {
+  document.getElementById('error').textContent = 'Error: ' + e.message + '\n' + e.stack;
+}
+</script>
+<script>
+window.onerror = function(msg, url, line, col, error) {
+  document.getElementById('error').textContent = 'Error: ' + msg + ' (Line ' + line + ')';
+};
 </script>
 </body>
 </html>
